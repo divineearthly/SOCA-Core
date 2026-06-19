@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_017",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Sutra Validator",
+  "type": "evolution",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "sutra", "type": "object", "required": true},
+    {"name": "test_cases", "type": "array", "required": false}
+  ],
+  "outputs": [
+    {"name": "valid", "type": "boolean"},
+    {"name": "errors", "type": "array"},
+    {"name": "sutra_id", "type": "string"}
+  ],
+  "prerequisites": ["sutra_016"],
+  "operation": {
+    "module": "sutras.evolution.sutra_validator",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

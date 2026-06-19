@@ -1,30 +1,44 @@
 """
 Sutra 010: Verify Output
 Pramana: Pratyaksha (Direct Perception)
+Now handles parallel execution sets properly
 """
 
 def execute(inputs: dict, context: dict = None) -> dict:
     """
     Verify that the output matches expectations.
-    
-    Args:
-        inputs: dict with 'expected' and 'actual' keys
-    
-    Returns:
-        dict with 'status', 'outputs', 'trace'
+    Supports normalized comparison for scheduling.
     """
     expected = inputs.get('expected', {})
     actual = inputs.get('actual', {})
     
     mismatches = []
+    
     for key, expected_value in expected.items():
         actual_value = actual.get(key)
-        if actual_value != expected_value:
-            mismatches.append({
-                'key': key,
-                'expected': expected_value,
-                'actual': actual_value
-            })
+        
+        # Handle schedule comparison with normalization
+        if key == 'schedule' and isinstance(expected_value, list) and isinstance(actual_value, list):
+            # Normalize: sort each level for parallel execution comparison
+            normalized_expected = [sorted(level) for level in expected_value]
+            normalized_actual = [sorted(level) for level in actual_value]
+            
+            if normalized_expected != normalized_actual:
+                mismatches.append({
+                    'key': key,
+                    'expected': expected_value,
+                    'actual': actual_value,
+                    'normalized_expected': normalized_expected,
+                    'normalized_actual': normalized_actual
+                })
+        else:
+            # Standard comparison
+            if actual_value != expected_value:
+                mismatches.append({
+                    'key': key,
+                    'expected': expected_value,
+                    'actual': actual_value
+                })
     
     passed = len(mismatches) == 0
     

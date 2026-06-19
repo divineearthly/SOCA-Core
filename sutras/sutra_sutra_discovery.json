@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_015",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Sutra Discovery",
+  "type": "evolution",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "target_domain", "type": "string", "required": false},
+    {"name": "max_gaps", "type": "integer", "required": false}
+  ],
+  "outputs": [
+    {"name": "total_sutras", "type": "integer"},
+    {"name": "gaps", "type": "array"},
+    {"name": "gap_count", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.evolution.sutra_discovery",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_016",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Sutra Generator",
+  "type": "evolution",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "gap", "type": "object", "required": true},
+    {"name": "sutra_id", "type": "string", "required": false},
+    {"name": "template", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "sutra", "type": "object"},
+    {"name": "gap", "type": "object"}
+  ],
+  "prerequisites": ["sutra_015"],
+  "operation": {
+    "module": "sutras.evolution.sutra_generator",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

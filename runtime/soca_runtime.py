@@ -25,7 +25,6 @@ class SOCARuntime:
         if not sutra_def:
             raise ValueError(f"Sutra {sutra_id} not found in registry")
         
-        # Import the module dynamically
         try:
             module = importlib.import_module(sutra_def['module_path'])
             func = getattr(module, sutra_def['entry_point'])
@@ -35,26 +34,6 @@ class SOCARuntime:
         except AttributeError as e:
             raise AttributeError(f"Could not find {sutra_def['entry_point']} in {sutra_def['module_path']}: {e}")
     
-    def build_graph(self, target_sutra_id: str, max_depth: int = 10):
-        """Recursively build a DAG of prerequisites for a target Sutra."""
-        if max_depth <= 0:
-            return
-        
-        sutra_def = self.registry.get_sutra(target_sutra_id)
-        if not sutra_def:
-            raise ValueError(f"Sutra {target_sutra_id} not found in registry")
-        
-        # Add the target node
-        self.graph.add_node(target_sutra_id, definition=sutra_def)
-        
-        # For MVP, we'll use a simple approach - check if the sutra expects specific inputs
-        # that could be provided by other sutras
-        # This is a simplified version - in production, you'd have explicit prerequisites
-        
-        # Get all sutras in registry
-        # For now, we'll keep it simple and not recursively build
-        pass
-    
     def build_graph_from_list(self, sutra_ids: List[str]):
         """Build a graph from a list of sutra IDs in execution order."""
         for sutra_id in sutra_ids:
@@ -62,7 +41,6 @@ class SOCARuntime:
             if sutra_def:
                 self.graph.add_node(sutra_id, definition=sutra_def)
         
-        # Add edges in sequence
         for i in range(len(sutra_ids) - 1):
             self.graph.add_edge(sutra_ids[i], sutra_ids[i+1])
     
@@ -72,7 +50,6 @@ class SOCARuntime:
         traces = []
         start_time = time.time()
         
-        # If no order specified, use topological sort
         if sutra_order is None:
             try:
                 order = list(nx.topological_sort(self.graph))
@@ -85,7 +62,6 @@ class SOCARuntime:
         else:
             order = sutra_order
         
-        # Execute each Sutra in order
         for sutra_id in order:
             try:
                 sutra_func = self.load_sutra(sutra_id)
@@ -96,26 +72,22 @@ class SOCARuntime:
                     "trace": {"executed_sutras": traces}
                 }
             
-            # Gather inputs from previous results
             sutra_inputs = {}
             sutra_def = self.registry.get_sutra(sutra_id)
-            
             if sutra_def:
-                # Check input requirements
-                # For now, just pass all results and original inputs
                 sutra_inputs = {**inputs, **results}
             
-            # Execute
             try:
                 exec_result = sutra_func(sutra_inputs)
                 
                 if exec_result['status'] == 'success':
-                    # Store outputs for downstream Sutras
                     if 'outputs' in exec_result:
                         for key, value in exec_result['outputs'].items():
                             results[key] = value
                     
+                    # ✅ FIX: Record usage on every successful execution
                     self.registry.record_usage(sutra_id, True)
+                    
                     trace_entry = {
                         "id": sutra_id,
                         "version": exec_result.get('trace', {}).get('sutra_version', 'unknown'),
@@ -124,6 +96,7 @@ class SOCARuntime:
                     }
                     traces.append(trace_entry)
                 else:
+                    # ✅ FIX: Record failure
                     self.registry.record_usage(sutra_id, False)
                     return {
                         "status": "failure",
@@ -131,6 +104,7 @@ class SOCARuntime:
                         "trace": {"executed_sutras": traces + [{"id": sutra_id, "status": "failure"}]}
                     }
             except Exception as e:
+                # ✅ FIX: Record exception
                 self.registry.record_usage(sutra_id, False)
                 return {
                     "status": "failure",
@@ -138,7 +112,6 @@ class SOCARuntime:
                     "trace": {"executed_sutras": traces + [{"id": sutra_id, "status": "failure"}]}
                 }
         
-        # Build trace
         trace_id = str(uuid.uuid4())[:8]
         trace_data = {
             "trace_id": trace_id,
@@ -158,14 +131,9 @@ class SOCARuntime:
     
     def solve_sequence(self, sutra_ids: List[str], inputs: Dict) -> Dict:
         """Solve a problem by executing a sequence of Sutras."""
-        # Reset graph
         self.graph = nx.DiGraph()
         self.results = {}
-        
-        # Build graph from sequence
         self.build_graph_from_list(sutra_ids)
-        
-        # Execute
         return self.execute_graph(inputs, sutra_ids)
     
     def register_sutras_from_directory(self, sutra_dir: str = "sutras"):

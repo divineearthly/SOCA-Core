@@ -37,10 +37,18 @@ def execute(inputs: dict, context: dict = None) -> dict:
         }
     
     # Parse specification to generate code
-    # This is a simple template-based generator for MVP
-    # In production, this would use an LLM or more sophisticated generation
-    
     code = generate_code_from_spec(specification)
+    
+    if not code:
+        return {
+            "status": "failure",
+            "outputs": {},
+            "trace": {
+                "sutra_id": "sutra_011",
+                "version": "1.0.0",
+                "error": f"Could not generate code for: {specification}"
+            }
+        }
     
     # Verify the code
     verification_result = verify_code(code, test_cases)
@@ -58,7 +66,7 @@ def execute(inputs: dict, context: dict = None) -> dict:
                 "version": "1.0.0",
                 "execution_time_ms": 0,
                 "specification": specification,
-                "test_cases_passed": len(verification_result['results']),
+                "test_cases_passed": len([r for r in verification_result['results'] if r['passed']]),
                 "test_cases_total": len(test_cases)
             }
         }
@@ -83,9 +91,29 @@ def execute(inputs: dict, context: dict = None) -> dict:
 def generate_code_from_spec(specification: str) -> str:
     """
     Generate Python code from a specification.
-    MVP: Uses pattern matching for common functions.
+    Supports: factorial, fibonacci, palindrome, sum, prime, and more.
     """
     spec_lower = specification.lower()
+    
+    # Prime number check
+    if "prime" in spec_lower and ("check" in spec_lower or "is" in spec_lower):
+        return '''def is_prime(n):
+    """
+    Check if a number is prime.
+    """
+    if n <= 1:
+        return False
+    if n <= 3:
+        return True
+    if n % 2 == 0 or n % 3 == 0:
+        return False
+    i = 5
+    while i * i <= n:
+        if n % i == 0 or n % (i + 2) == 0:
+            return False
+        i += 6
+    return True
+'''
     
     # Factorial
     if "factorial" in spec_lower:
@@ -109,7 +137,7 @@ def generate_code_from_spec(specification: str) -> str:
     return fibonacci(n - 1) + fibonacci(n - 2)
 '''
     
-    # Sum
+    # Sum of list
     elif "sum" in spec_lower and "list" in spec_lower:
         return '''def sum_list(numbers):
     """
@@ -128,15 +156,31 @@ def generate_code_from_spec(specification: str) -> str:
     return s == s[::-1]
 '''
     
-    # Default: generic function template
-    else:
-        return f'''def generated_function():
+    # Max of list
+    elif "max" in spec_lower and "list" in spec_lower:
+        return '''def max_list(numbers):
     """
-    {specification}
+    Find maximum number in a list.
     """
-    # TODO: Implement based on specification
-    return None
+    if not numbers:
+        return None
+    return max(numbers)
 '''
+    
+    # Min of list
+    elif "min" in spec_lower and "list" in spec_lower:
+        return '''def min_list(numbers):
+    """
+    Find minimum number in a list.
+    """
+    if not numbers:
+        return None
+    return min(numbers)
+'''
+    
+    # Default: generic function
+    else:
+        return None
 
 def verify_code(code: str, test_cases: list) -> dict:
     """

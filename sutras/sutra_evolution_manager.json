@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_018",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Evolution Manager",
+  "type": "evolution",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "target_domain", "type": "string", "required": false},
+    {"name": "max_iterations", "type": "integer", "required": false},
+    {"name": "auto_promote", "type": "boolean", "required": false}
+  ],
+  "outputs": [
+    {"name": "cycles_completed", "type": "integer"},
+    {"name": "results", "type": "array"},
+    {"name": "summary", "type": "object"}
+  ],
+  "prerequisites": ["sutra_015", "sutra_016", "sutra_017"],
+  "operation": {
+    "module": "sutras.evolution.evolution_manager",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
