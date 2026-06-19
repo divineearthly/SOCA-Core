@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_030",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Fertilizer Advisor",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "soil_type", "type": "string", "required": true},
+    {"name": "crop", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "recommendation", "type": "string"},
+    {"name": "advice", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.fertilizer_advisor",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"soil_type": "loamy", "crop": "rice"},
+        "expected": {"recommendation": "NPK 10:20:10, organic manure"}
+      }
+    ]
+  }
+}

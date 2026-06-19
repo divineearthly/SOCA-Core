@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_029",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Market Advisor",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "crop", "type": "string", "required": true},
+    {"name": "location", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "price", "type": "string"},
+    {"name": "trend", "type": "string"},
+    {"name": "best_market", "type": "string"},
+    {"name": "profit_margin", "type": "string"},
+    {"name": "advice", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.market_advisor",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"crop": "rice"},
+        "expected": {"price": "₹22-28 per kg"}
+      }
+    ]
+  }
+}

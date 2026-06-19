@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_031",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Livestock Advisor",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "animal", "type": "string", "required": true},
+    {"name": "query", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "advice", "type": "string"},
+    {"name": "details", "type": "object"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.livestock_advisor",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"animal": "cattle"},
+        "expected": {"advice": "Livestock advice for cattle: Feed: Green fodder, concentrate, mineral mixture"}
+      }
+    ]
+  }
+}
