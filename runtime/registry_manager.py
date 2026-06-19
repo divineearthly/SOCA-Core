@@ -4,8 +4,11 @@ import os
 from datetime import datetime
 
 class RegistryManager:
-    def __init__(self, db_path: str = "registry/soca.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        if db_path is None:
+            base = os.path.dirname(os.path.abspath(__file__))
+            db_path = os.path.join(base, "..", "registry", "soca.db")
+        self.db_path = os.path.abspath(db_path)
         self._ensure_db()
     
     def _ensure_db(self):
