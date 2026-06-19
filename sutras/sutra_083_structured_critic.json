@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_083",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Structured Critic",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "answer", "type": "string", "required": true},
+    {"name": "sources", "type": "array", "required": false},
+    {"name": "slots", "type": "object", "required": false},
+    {"name": "intent", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "quality", "type": "number"},
+    {"name": "weaknesses", "type": "array"},
+    {"name": "actions", "type": "array"},
+    {"name": "action_count", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.structured_critic",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v20.0 - Planner-Aware Repairs + Adaptive Retrieval
+SOCA Agentic Pipeline v21.0 - Structured Critic + Goal Decomposition
 """
 
 import sys
@@ -12,22 +12,11 @@ sys.path.append('runtime')
 from soca_runtime import SOCARuntime
 
 GOAL_TTL = 86400
-REFLECTION_THRESHOLD = 0.6
+REFLECTION_THRESHOLD = 0.7
 MAX_ITERATIONS = 3
 
 # Retrieval strategies
 RETRIEVAL_STRATEGIES = ['bm25', 'semantic', 'hybrid', 'deep']
-
-# Repair-to-sutra mapping
-REPAIR_TO_SUTRA = {
-    'crop': 'sutra_056',      # Crop Rotation Advisor
-    'weather': 'sutra_025',   # Weather Advisor
-    'pest': 'sutra_026',      # Pest Detection
-    'water': 'sutra_027',     # Water Management
-    'market': 'sutra_029',    # Market Advisor
-    'fertilizer': 'sutra_030', # Fertilizer Advisor
-    'livestock': 'sutra_031', # Livestock Advisor
-}
 
 class AgenticPipeline:
     def __init__(self):
@@ -150,6 +139,10 @@ class AgenticPipeline:
         else:
             working_memory["intent"] = intent
         
+        # Goal decomposition
+        subgoals = self._decompose_goal(intent, working_memory)
+        working_memory["subgoals"] = subgoals
+        
         schema = self.slot_schema.get(intent, {})
         required_slots = schema.get("required", [])
         optional_slots = schema.get("optional", [])
@@ -183,12 +176,13 @@ class AgenticPipeline:
                 "iteration": 0,
                 "last_confidence": 0.0,
                 "evidence": [],
-                "repair_actions": [],
+                "actions": [],
                 "weaknesses": [],
                 "repairs_applied": [],
                 "retrieval_strategy": "bm25",
                 "repair_history": [],
-                "modified_sequence": []
+                "modified_sequence": [],
+                "subgoals": subgoals
             }
             self._push_goal(user_id, goal)
             return self._ask_clarification(user_id, goal, start_time)
@@ -207,15 +201,29 @@ class AgenticPipeline:
             "iteration": 0,
             "last_confidence": 0.0,
             "evidence": [],
-            "repair_actions": [],
+            "actions": [],
             "weaknesses": [],
             "repairs_applied": [],
             "retrieval_strategy": "bm25",
             "repair_history": [],
-            "modified_sequence": []
+            "modified_sequence": [],
+            "subgoals": subgoals
         }
         self._push_goal(user_id, goal)
         return self._execute_goal_with_reflection(user_id, start_time)
+    
+    def _decompose_goal(self, intent: str, working_memory: dict) -> list:
+        """Decompose a goal into subgoals."""
+        if intent == 'agriculture':
+            subgoals = []
+            if not working_memory["pending_slots"].get("soil_type"):
+                subgoals.append({"name": "soil_analysis", "status": "pending"})
+            if not working_memory["pending_slots"].get("season"):
+                subgoals.append({"name": "season_check", "status": "pending"})
+            if not working_memory["pending_slots"].get("district"):
+                subgoals.append({"name": "district_analysis", "status": "pending"})
+            return subgoals
+        return []
     
     def _execute_goal_with_reflection(self, user_id: str, start_time: float) -> dict:
         goal = self._peek_goal(user_id)
@@ -225,7 +233,7 @@ class AgenticPipeline:
         best_result = None
         best_confidence = 0.0
         previous_confidence = 0.0
-        attempted_repairs = set()
+        attempted_actions = set()
         
         for iteration in range(MAX_ITERATIONS):
             goal["iteration"] = iteration + 1
@@ -236,6 +244,7 @@ class AgenticPipeline:
             working_memory["profile"] = self._load_profile_only(user_id)
             working_memory["required_slots"] = goal.get("required_slots", [])
             working_memory["retrieval_strategy"] = goal.get("retrieval_strategy", "bm25")
+            working_memory["subgoals"] = goal.get("subgoals", [])
             self._load_observation_memory(user_id, working_memory)
             
             # Apply repair actions
@@ -244,8 +253,8 @@ class AgenticPipeline:
             # Execute reasoning with adaptive retrieval
             result = self._execute_full_reasoning(working_memory, start_time)
             
-            # Critic evaluation
-            critic_result = self._execute("sutra_082", {
+            # Structured Critic (sutra_083)
+            critic_result = self._execute("sutra_083", {
                 "answer": result.get("answer", ""),
                 "sources": result.get("sources", []),
                 "slots": working_memory.get("pending_slots", {}),
@@ -253,18 +262,20 @@ class AgenticPipeline:
             })
             
             weaknesses = []
-            repair_actions = []
+            actions = []
+            critic_score = 0.5
             if critic_result.get("status") == "success":
                 weaknesses = critic_result.get("outputs", {}).get("weaknesses", [])
-                repair_actions = critic_result.get("outputs", {}).get("repair_actions", [])
+                actions = critic_result.get("outputs", {}).get("actions", [])
+                critic_score = critic_result.get("outputs", {}).get("quality", 0.5)
                 goal["weaknesses"] = weaknesses
-                goal["repair_actions"] = repair_actions
+                goal["actions"] = actions
                 self._save_conversation_state(user_id)
             
-            # Dynamic confidence with critic penalty
+            # Dynamic confidence with critic score
             base_confidence = self._calculate_dynamic_confidence(working_memory, result)
-            critic_penalty = len(weaknesses) * 0.05
-            confidence = max(0.0, min(1.0, base_confidence - critic_penalty))
+            confidence = base_confidence * (0.6 + 0.4 * critic_score)
+            confidence = min(1.0, confidence)
             result["confidence"] = confidence
             
             # Track effectiveness
@@ -273,8 +284,9 @@ class AgenticPipeline:
                 goal["repair_history"].append({
                     "iteration": iteration,
                     "delta": delta,
-                    "repair": goal.get("last_repair", "none"),
-                    "confidence": confidence
+                    "action": goal.get("last_action", "none"),
+                    "confidence": confidence,
+                    "critic_score": critic_score
                 })
             
             # Track best result
@@ -294,15 +306,14 @@ class AgenticPipeline:
                 result["critic_used"] = True
                 return result
             
-            # Execute repairs if needed
-            if iteration < MAX_ITERATIONS - 1 and repair_actions:
-                # Filter out already attempted repairs
-                new_repairs = [a for a in repair_actions if a not in attempted_repairs]
-                if new_repairs:
-                    executed = self._execute_repairs(goal, working_memory, new_repairs)
+            # Execute actions if needed
+            if iteration < MAX_ITERATIONS - 1 and actions:
+                new_actions = [a for a in actions if str(a) not in attempted_actions]
+                if new_actions:
+                    executed = self._execute_actions(goal, working_memory, new_actions)
                     if executed:
-                        attempted_repairs.update(new_repairs)
-                        goal["last_repair"] = new_repairs[0]
+                        attempted_actions.update(str(a) for a in new_actions)
+                        goal["last_action"] = new_actions[0].get("type", "unknown")
                         self._save_conversation_state(user_id)
                         continue
         
@@ -316,61 +327,46 @@ class AgenticPipeline:
         
         return result
     
-    def _execute_repairs(self, goal: dict, working_memory: dict, repair_actions: list) -> bool:
-        """Execute repair actions - modifies planner sequence and retrieval strategy."""
+    def _execute_actions(self, goal: dict, working_memory: dict, actions: list) -> bool:
+        """Execute structured actions."""
         executed = False
         
-        for action in repair_actions:
-            # Action 1: Ask for missing slot
-            if "Ask for" in action or "specified" in action:
-                missing_slots = goal.get("missing_slots", [])
-                required = goal.get("required_slots", [])
-                filled = goal.get("filled_slots", {})
-                
-                for slot in required:
-                    if not filled.get(slot) and slot not in missing_slots:
-                        missing_slots.append(slot)
-                        executed = True
-                
-                if missing_slots:
-                    goal["missing_slots"] = missing_slots
-                    goal["status"] = "waiting_for_clarification"
-                    self._save_conversation_state(goal.get("user_id"))
-                    return True
+        for action in actions:
+            action_type = action.get("type", "")
             
-            # Action 2: Modify retrieval strategy
-            elif "Retrieve more" in action or "sources" in action:
-                # Cycle through strategies
-                current = goal.get("retrieval_strategy", "bm25")
-                strategies = ["bm25", "semantic", "hybrid", "deep"]
-                idx = strategies.index(current) if current in strategies else 0
-                goal["retrieval_strategy"] = strategies[(idx + 1) % len(strategies)]
+            if action_type == "ask":
+                slot = action.get("slot", "")
+                if slot:
+                    missing_slots = goal.get("missing_slots", [])
+                    if slot not in missing_slots:
+                        missing_slots.append(slot)
+                        goal["missing_slots"] = missing_slots
+                        goal["status"] = "waiting_for_clarification"
+                        self._save_conversation_state(goal.get("user_id"))
+                        return True
+            
+            elif action_type == "retrieve":
+                strategy = action.get("strategy", "semantic")
+                goal["retrieval_strategy"] = strategy
                 executed = True
             
-            # Action 3: Add specific sutra to sequence
-            elif "Recommend specific" in action:
-                # Find relevant sutra based on context
-                intent = goal.get("intent", "agriculture")
-                if intent == "agriculture":
+            elif action_type == "specific" or action_type == "expand":
+                if goal.get("intent") == "agriculture":
                     goal["modified_sequence"] = goal.get("modified_sequence", []) + ["sutra_056"]
-                    executed = True
-            
-            # Action 4: Diversify sources
-            elif "diversify" in action.lower():
-                goal["retrieval_strategy"] = "hybrid"
                 executed = True
         
         if executed:
-            goal["repairs_applied"] = goal.get("repairs_applied", []) + repair_actions
+            goal["repairs_applied"] = goal.get("repairs_applied", []) + actions
         
         return executed
     
     def _apply_repair_actions(self, goal: dict, working_memory: dict):
         """Apply repair actions to working memory."""
         for action in goal.get("repairs_applied", []):
-            if "Retrieve more" in action or "sources" in action:
+            action_type = action.get("type", "")
+            if action_type == "retrieve":
                 working_memory["retrieval_strategy"] = goal.get("retrieval_strategy", "bm25")
-            if "Recommend specific" in action:
+            if action_type == "specific":
                 working_memory["modified_sequence"] = goal.get("modified_sequence", [])
     
     def _calculate_dynamic_confidence(self, working_memory: dict, result: dict) -> float:
@@ -463,7 +459,8 @@ class AgenticPipeline:
             "actions": [],
             "last_crop": None,
             "retrieval_strategy": "bm25",
-            "modified_sequence": []
+            "modified_sequence": [],
+            "subgoals": []
         }
     
     def _classify_intent(self, query: str, working_memory: dict):
@@ -495,7 +492,6 @@ class AgenticPipeline:
             json.dump(self.conversation_state.get(user_id, {}), f, indent=2)
     
     def _execute_full_reasoning(self, working_memory: dict, start_time: float) -> dict:
-        # Knowledge Retrieval with adaptive strategy
         retrieval_strategy = working_memory.get("retrieval_strategy", "bm25")
         self._add_trace("retrieval", retrieval_strategy)
         
@@ -509,7 +505,6 @@ class AgenticPipeline:
             working_memory["knowledge"] = knowledge_result.get("outputs", {}).get("knowledge_results", [])
         self._add_trace("knowledge", len(working_memory["knowledge"]))
         
-        # BM25 Ranking
         ranker_result = self._execute("sutra_080", {
             "query": working_memory["query"],
             "knowledge_results": working_memory["knowledge"],
@@ -519,14 +514,12 @@ class AgenticPipeline:
             working_memory["ranked_knowledge"] = ranker_result.get("outputs", {}).get("ranked_results", [])
         self._add_trace("bm25", len(working_memory["ranked_knowledge"]))
         
-        # Query Planner with modifications
         planner_result = self._execute("sutra_069", {
             "query": working_memory["query"],
             "intent": working_memory["intent"]
         })
         sequence = planner_result.get("outputs", {}).get("sequence", ["sutra_041"])
         
-        # Apply sequence modifications
         if working_memory.get("modified_sequence"):
             sequence = sequence + working_memory["modified_sequence"]
         
@@ -534,7 +527,8 @@ class AgenticPipeline:
         for sutra_id in sequence:
             if sutra_id in ["sutra_068", "sutra_069", "sutra_070", "sutra_071", "sutra_072",
                            "sutra_073", "sutra_074", "sutra_075", "sutra_076", "sutra_077",
-                           "sutra_078", "sutra_079", "sutra_080", "sutra_081", "sutra_082"]:
+                           "sutra_078", "sutra_079", "sutra_080", "sutra_081", "sutra_082",
+                           "sutra_083"]:
                 continue
             
             inputs = {
@@ -552,7 +546,6 @@ class AgenticPipeline:
                 results[sutra_id] = outputs
                 for k, v in outputs.items():
                     if v not in [None, "", []]:
-                        # Normalize values for deduplication
                         if isinstance(v, str):
                             v = v.strip()
                         if k not in working_memory["results"]:
@@ -635,7 +628,7 @@ class AgenticPipeline:
             f"✅ Approved: {result['approved']}",
             f"🔄 Iteration: {result.get('iteration', 1)}",
             f"⏱️ Time: {result['elapsed_ms']:.1f}ms",
-            f"🔍 Retrieval: {result.get('retrieval_strategy', 'bm25')}",
+            f"🔍 Strategy: {result.get('retrieval_strategy', 'bm25')}",
             "",
             "📋 Slots Filled:"
         ]
