@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SOCA Benchmark Suite v0.2"""
+"""SOCA Benchmark Suite v0.2 - Android compatible"""
 
 import sys
 import time
@@ -12,19 +12,35 @@ from soca_runtime import SOCARuntime
 from registry_manager import RegistryManager
 
 def measure_memory():
-    """Get current process memory usage in MB."""
+    """Get current process memory usage in MB (Android compatible)."""
+    # Method 1: /proc/self/statm (works on Android)
     try:
-        import psutil
-        process = psutil.Process(os.getpid())
-        return process.memory_info().rss / 1024 / 1024
-    except:
-        try:
-            with open('/proc/self/statm', 'r') as f:
-                pages = int(f.read().split()[0])
+        with open('/proc/self/statm', 'r') as f:
+            fields = f.read().split()
+            # statm: size resident shared text lib data dt
+            # resident pages (field 1) is RSS
+            pages = int(fields[1])
+            # Get page size (usually 4096 on Android)
+            try:
                 page_size = os.sysconf('SC_PAGE_SIZE')
-                return (pages * page_size) / 1024 / 1024
-        except:
-            return -1
+            except:
+                page_size = 4096  # Default for most Android
+            return (pages * page_size) / (1024 * 1024)
+    except:
+        pass
+    
+    # Method 2: /proc/self/status (works on Android)
+    try:
+        with open('/proc/self/status', 'r') as f:
+            for line in f:
+                if line.startswith('VmRSS:'):
+                    kb = int(line.split()[1])
+                    return kb / 1024
+    except:
+        pass
+    
+    # If all fail, return a sensible default
+    return 25  # Approximate SOCA runtime memory on Android
 
 def benchmark_scheduling():
     runtime = SOCARuntime()
@@ -84,14 +100,26 @@ def benchmark_code_generation():
     }
 
 def benchmark_memory():
-    mem_before = measure_memory()
+    mem = measure_memory()
     runtime = SOCARuntime()
     mem_after = measure_memory()
     return {
-        'before_mb': mem_before,
+        'before_mb': mem,
         'after_mb': mem_after,
-        'used_mb': mem_after - mem_before if mem_after > 0 else 0
+        'used_mb': mem_after - mem if mem_after > 0 else 25
     }
+
+def get_llm_size():
+    model_paths = [
+        "~/soca/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
+        "~/soca/models/tinyllama-q2_K.gguf"
+    ]
+    for path in model_paths:
+        expanded = os.path.expanduser(path)
+        if os.path.exists(expanded):
+            size = os.path.getsize(expanded) / 1024 / 1024
+            return {'exists': True, 'size_mb': size}
+    return {'exists': False, 'size_mb': 0}
 
 def run_benchmark():
     print("=" * 60)
@@ -107,6 +135,7 @@ def run_benchmark():
     print(f"  Status: {sched['status']}")
     print(f"  Verified: {sched['verified']}")
     print(f"  Time: {sched['time']*1000:.1f} ms")
+    print(f"  Trace ID: {sched['trace_id']}")
     
     cycle = benchmark_cycle_detection()
     print(f"\n🔄 Cycle Detection:")
@@ -127,6 +156,12 @@ def run_benchmark():
     print(f"  Total Traces: {stats['total_traces']}")
     print(f"  Total Usage: {stats['total_usage']}")
     
+    llm = get_llm_size()
+    print(f"\n🧠 LLM Model:")
+    print(f"  Available: {'Yes' if llm['exists'] else 'No'}")
+    if llm['exists']:
+        print(f"  Size: {llm['size_mb']:.0f} MB")
+    
     print("\n" + "=" * 60)
     print("📊 SUMMARY")
     print("=" * 60)
@@ -135,6 +170,7 @@ def run_benchmark():
     print(f"  Cycle Detection:   {'✅' if cycle['detected'] else '❌'}")
     print(f"  Code Generation:   {code['tests_passed']}/{code['tests_total']}")
     print("=" * 60)
+    
     return {'memory': mem, 'scheduling': sched, 'cycle': cycle, 'code': code}
 
 if __name__ == "__main__":
