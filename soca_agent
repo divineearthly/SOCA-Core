@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SOCA Agentic CLI - Shared Working Memory Architecture
+SOCA Agentic CLI v8.0 - True Autonomous Agent
 """
 
 import sys
@@ -10,8 +10,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from runtime.agentic_pipeline import AgenticPipeline
 
 def main():
-    print("\n🕉️ SOCA Agentic Pipeline (v6.0 - Shared Memory)")
-    print("=" * 50)
+    print("\n🕉️ SOCA Agentic Pipeline (v8.0 - True Autonomous Agent)")
+    print("=" * 55)
     
     pipeline = AgenticPipeline()
     
@@ -27,12 +27,19 @@ def main():
         print(pipeline.explain(query))
     else:
         result = pipeline.process(query)
-        print(f"\n📝 Query: {query}")
-        print(f"✅ Answer: {result['answer'][:300]}")
-        print(f"📊 Confidence: {result['confidence']:.2f}")
-        print(f"📍 District: {result.get('context', {}).get('district', 'Unknown')}")
-        print(f"🌾 Intent: {result.get('intent', 'Unknown')}")
-        print(f"📚 Sources: {len(result.get('sources', []))}")
+        if result.get("status") == "needs_clarification":
+            print("\n❓ Clarification Needed:")
+            for q in result.get("questions", []):
+                print(f"  → {q}")
+        else:
+            print(f"\n📝 Query: {query}")
+            print(f"✅ Answer: {result['answer'][:300]}")
+            print(f"📊 Confidence: {result['confidence']:.2f}")
+            print(f"📍 District: {result.get('context', {}).get('district', 'Unknown')}")
+            print(f"🌾 Intent: {result.get('intent', 'Unknown')}")
+            print(f"📚 Sources: {len(result.get('sources', []))}")
+            if result.get('ranked_knowledge'):
+                print(f"🔍 Top Source: {result['ranked_knowledge'][0].get('source', 'None')}")
 
 if __name__ == "__main__":
     main()
