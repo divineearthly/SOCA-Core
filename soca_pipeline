@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SOCA Pipeline CLI - Runs the full reasoning pipeline
+SOCA Pipeline CLI - Full reasoning with shared memory
 """
 
 import sys
@@ -10,8 +10,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from runtime.reasoning_pipeline import ReasoningPipeline
 
 def main():
-    print("\n🕉️ SOCA Reasoning Pipeline")
-    print("=" * 40)
+    print("\n🕉️ SOCA Reasoning Pipeline (v2 - Shared Memory)")
+    print("=" * 45)
     
     pipeline = ReasoningPipeline()
     
@@ -28,9 +28,11 @@ def main():
     else:
         result = pipeline.process(query)
         print(f"\n📝 Query: {query}")
-        print(f"✅ Answer: {result['answer'][:200]}")
+        print(f"✅ Answer: {result['answer'][:300]}")
         print(f"📊 Confidence: {result['confidence']:.2f}")
         print(f"⏱️ Time: {result['elapsed_ms']:.1f}ms")
+        print(f"📍 Location: {result.get('working_memory', {}).get('location', 'Unknown')}")
+        print(f"🌾 Intent: {result.get('intent', 'Unknown')}")
 
 if __name__ == "__main__":
     main()
