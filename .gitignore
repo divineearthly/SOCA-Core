@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.db
+*.log
+*.sqlite
+*.sqlite3
+.DS_Store
+*.tmp
+*.temp

@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_001",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Integer Addition",
+  "type": "arithmetic",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "a", "type": "integer", "required": true},
+    {"name": "b", "type": "integer", "required": true}
+  ],
+  "outputs": [
+    {"name": "sum", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.arithmetic.add",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {"input": {"a": 1, "b": 2}, "expected": {"sum": 3}},
+      {"input": {"a": -1, "b": 1}, "expected": {"sum": 0}}
+    ]
+  }
+}

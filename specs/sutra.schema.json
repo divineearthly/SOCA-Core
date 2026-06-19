@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "sutra_id",
+    "sutra_version",
+    "name",
+    "type",
+    "category",
+    "pramana",
+    "inputs",
+    "outputs",
+    "prerequisites",
+    "operation",
+    "validation"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^0\\.1\\.[0-9]+$"},
+    "sutra_id": {"type": "string", "pattern": "^sutra_[0-9]{3}$"},
+    "sutra_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "compatibility": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "name": {"type": "string"},
+    "type": {"type": "string"},
+    "category": {"type": "string"},
+    "pramana": {
+      "type": "string",
+      "enum": ["pratyaksha", "anumana", "upamana", "shabda"]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {"type": "string"},
+          "type": {"type": "string"},
+          "required": {"type": "boolean", "default": true}
+        }
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {"type": "string"},
+          "type": {"type": "string"}
+        }
+      }
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "operation": {
+      "type": "object",
+      "required": ["module", "entry_point"],
+      "properties": {
+        "module": {"type": "string"},
+        "entry_point": {"type": "string"}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "tests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "input": {"type": "object"},
+              "expected": {"type": "object"}
+            }
+          }
+        }
+      }
+    }
+  }
+}
