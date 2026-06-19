@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_040",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Reputation Engine",
+  "type": "community",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "contributor", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "contributor", "type": "string"},
+    {"name": "contributions", "type": "integer"},
+    {"name": "approved", "type": "integer"},
+    {"name": "reputation", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.community.reputation_engine",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

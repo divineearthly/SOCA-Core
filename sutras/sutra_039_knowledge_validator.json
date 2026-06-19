@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_039",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Knowledge Validator",
+  "type": "community",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "contribution_id", "type": "integer", "required": true},
+    {"name": "action", "type": "string", "required": false},
+    {"name": "validator", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "status", "type": "string"},
+    {"name": "validated", "type": "boolean"},
+    {"name": "reason", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.community.knowledge_validator",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

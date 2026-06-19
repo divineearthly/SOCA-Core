@@ -1,0 +1,34 @@
+{
+  "crops": [
+    {
+      "name": "Rice (Sali)",
+      "season": "Kharif",
+      "soil": "Loamy",
+      "water_requirement": "High",
+      "duration": "120-150 days",
+      "varieties": ["Boro", "Sali", "Ahu"],
+      "traditional_practice": "Transplanting method",
+      "region": "Assam"
+    },
+    {
+      "name": "Tea",
+      "season": "Kharif",
+      "soil": "Well-drained acidic soil",
+      "water_requirement": "Moderate",
+      "duration": "Perennial",
+      "varieties": ["Assam CTC", "Orthodox"],
+      "traditional_practice": "Two-leaf-and-a-bud plucking",
+      "region": "Assam"
+    },
+    {
+      "name": "Jute",
+      "season": "Kharif",
+      "soil": "Alluvial",
+      "water_requirement": "High",
+      "duration": "120 days",
+      "varieties": ["White Jute", "Tossa"],
+      "traditional_practice": "Retting in water",
+      "region": "Assam"
+    }
+  ]
+}

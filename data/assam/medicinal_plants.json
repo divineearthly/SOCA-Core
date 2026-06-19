@@ -1,0 +1,25 @@
+{
+  "plants": [
+    {
+      "name": "Tulsi",
+      "local_name": "তুলসী",
+      "uses": ["Cough", "Cold", "Respiratory issues"],
+      "preparation": "Chew leaves or make tea",
+      "region": "Assam"
+    },
+    {
+      "name": "Neem",
+      "local_name": "নিম",
+      "uses": ["Skin conditions", "Dental care", "Antibacterial"],
+      "preparation": "Paste from leaves or oil",
+      "region": "Assam"
+    },
+    {
+      "name": "Ginger",
+      "local_name": "আদা",
+      "uses": ["Digestion", "Nausea", "Anti-inflammatory"],
+      "preparation": "Fresh or dried in cooking",
+      "region": "Assam"
+    }
+  ]
+}
