@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_062",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Offline Voice",
+  "type": "voice",
+  "category": "interface",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "text", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "text", "type": "string"},
+    {"name": "note", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.voice.offline_voice",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

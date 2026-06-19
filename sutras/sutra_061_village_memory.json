@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_061",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Village Memory",
+  "type": "village",
+  "category": "domain",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "village", "type": "string", "required": false},
+    {"name": "district", "type": "string", "required": false},
+    {"name": "data", "type": "object", "required": false}
+  ],
+  "outputs": [
+    {"name": "village", "type": "string"},
+    {"name": "district", "type": "string"},
+    {"name": "data", "type": "object"},
+    {"name": "villages", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.village.village_memory",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_065",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Hindi NLU",
+  "type": "multilingual",
+  "category": "language",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "language", "type": "string"},
+    {"name": "confidence", "type": "number"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.multilingual.hindi_nlu",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
