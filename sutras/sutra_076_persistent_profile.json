@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_076",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Persistent Profile Manager",
+  "type": "core",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "user_id", "type": "string", "required": false},
+    {"name": "profile_data", "type": "object", "required": false}
+  ],
+  "outputs": [
+    {"name": "profile", "type": "object"},
+    {"name": "profile_loaded", "type": "boolean"},
+    {"name": "is_new", "type": "boolean"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.persistent_profile",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_078",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Clarification Generator",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true},
+    {"name": "intent", "type": "string", "required": false},
+    {"name": "working_memory", "type": "object", "required": false}
+  ],
+  "outputs": [
+    {"name": "needs_clarification", "type": "boolean"},
+    {"name": "questions", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.clarification_generator",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

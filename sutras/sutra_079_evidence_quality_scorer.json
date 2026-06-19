@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_079",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Evidence Quality Scorer",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "answer", "type": "string", "required": true},
+    {"name": "sources", "type": "array", "required": false},
+    {"name": "ranked_results", "type": "array", "required": false},
+    {"name": "domain", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "quality_score", "type": "number"},
+    {"name": "level", "type": "string"},
+    {"name": "recommendation", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.evidence_quality_scorer",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
