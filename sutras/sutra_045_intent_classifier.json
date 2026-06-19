@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_045",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Intent Classifier",
+  "type": "reasoning",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "intent", "type": "string"},
+    {"name": "confidence", "type": "number"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.reasoning.intent_classifier",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
