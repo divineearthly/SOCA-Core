@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_086",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Tri-Nadi Activation",
+  "type": "kernel",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "x", "type": "array", "required": true}
+  ],
+  "outputs": [
+    {"name": "result", "type": "array"},
+    {"name": "shape", "type": "array"},
+    {"name": "channels", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.kernels.tri_nadi_activation",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

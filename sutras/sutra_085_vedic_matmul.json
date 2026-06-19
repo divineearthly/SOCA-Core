@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_085",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Vedic Matrix Multiplication",
+  "type": "kernel",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "a", "type": "array", "required": true},
+    {"name": "b", "type": "array", "required": true}
+  ],
+  "outputs": [
+    {"name": "result", "type": "array"},
+    {"name": "shape", "type": "array"},
+    {"name": "elapsed_ms", "type": "number"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.kernels.vedic_matmul",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"a": [[1,2],[3,4]], "b": [[5,6],[7,8]]},
+        "expected": {"result": [[19,22],[43,50]]}
+      }
+    ]
+  }
+}
