@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v10.0 - True Agent with Iterative Planning
+SOCA Agentic Pipeline v11.0 - Goal Stack + Task Resumption
 """
 
 import sys
@@ -25,7 +25,33 @@ class AgenticPipeline:
         # Load conversation state
         self._load_conversation_state(user_id)
         
-        # Initialize working memory with slot tracking
+        # Check if this is a continuation (slot fill)
+        is_continuation = self._is_slot_fill(query)
+        
+        if is_continuation and self.conversation_state.get(user_id, {}).get("goal"):
+            # Resume the goal
+            return self._resume_goal(query, user_id, start_time)
+        
+        # Otherwise, start new goal
+        return self._start_new_goal(query, user_id, start_time)
+    
+    def _is_slot_fill(self, query: str) -> bool:
+        """Check if query is filling a slot."""
+        query_lower = query.lower()
+        # Check if it's a season, district, or soil type
+        seasons = ["kharif", "rabi", "summer", "winter"]
+        districts = ["bongaigaon", "barpeta", "jorhat", "nagaon", "dibrugarh",
+                    "sonitpur", "dhubri", "goalpara", "kokrajhar", "tinsukia"]
+        soils = ["loamy", "clay", "sandy", "alluvial"]
+        
+        for word in seasons + districts + soils:
+            if word in query_lower:
+                return True
+        return False
+    
+    def _start_new_goal(self, query: str, user_id: str, start_time: float) -> dict:
+        """Start a new goal from query."""
+        # Initialize working memory
         working_memory = {
             "query": query,
             "user_id": user_id,
@@ -50,13 +76,17 @@ class AgenticPipeline:
             "iteration": 0,
             "goal_reached": False,
             "observations": [],
-            "actions": []
+            "actions": [],
+            "goal": {
+                "task": "crop_recommendation",
+                "status": "pending"
+            }
         }
         
-        # Fill initial slots from query
+        # Fill slots from query
         self._fill_slots_from_query(query, working_memory)
         
-        # Load profile and fill slots
+        # Load profile
         self._load_profile(user_id, working_memory)
         
         # Restore pending slots from conversation state
@@ -65,79 +95,129 @@ class AgenticPipeline:
                 if value and not working_memory["pending_slots"].get(slot):
                     working_memory["pending_slots"][slot] = value
         
-        # Step 1: Classify intent BEFORE slot checking
+        # Classify intent
         self._classify_intent(query, working_memory)
         
-        # Main planning loop
-        for iteration in range(self.max_iterations):
-            working_memory["iteration"] = iteration + 1
+        # Check slots
+        if not self._all_slots_filled(working_memory):
+            missing = self._get_missing_slots(working_memory)
+            # Save goal state
+            self.conversation_state[user_id] = {
+                "goal": working_memory["goal"],
+                "pending_slots": working_memory["pending_slots"],
+                "query": query,
+                "intent": working_memory["intent"],
+                "profile": working_memory["profile"],
+                "context": working_memory["context"],
+                "iteration": 0
+            }
+            self._save_conversation_state(user_id)
             
-            # Check if all required slots are filled
-            if self._all_slots_filled(working_memory):
-                working_memory["goal_reached"] = True
+            return {
+                "status": "needs_clarification",
+                "questions": self._generate_questions(missing),
+                "missing_slots": missing,
+                "query": query,
+                "intent": working_memory["intent"],
+                "trace": self.trace,
+                "elapsed_ms": round((time.time() - start_time) * 1000, 1)
+            }
+        
+        # All slots filled, execute reasoning
+        return self._execute_full_reasoning(working_memory, start_time)
+    
+    def _resume_goal(self, query: str, user_id: str, start_time: float) -> dict:
+        """Resume a goal with a slot fill."""
+        state = self.conversation_state.get(user_id, {})
+        goal = state.get("goal", {})
+        pending_slots = state.get("pending_slots", {})
+        
+        # Fill the slot from query
+        query_lower = query.lower()
+        
+        # Check for season
+        seasons = {"kharif": "kharif", "rabi": "rabi", "summer": "summer", "winter": "winter"}
+        for key, value in seasons.items():
+            if key in query_lower and not pending_slots.get("season"):
+                pending_slots["season"] = value
                 break
-            
-            # If this is the first iteration, ask for missing slots
-            if iteration == 0:
-                missing = self._get_missing_slots(working_memory)
-                # Save state for next query
-                self.conversation_state[user_id] = {
-                    "pending_slots": working_memory["pending_slots"],
-                    "query": query,
-                    "intent": working_memory["intent"]
-                }
-                return {
-                    "status": "needs_clarification",
-                    "questions": self._generate_questions(missing),
-                    "missing_slots": missing,
-                    "query": query,
-                    "intent": working_memory["intent"],
-                    "trace": self.trace,
-                    "elapsed_ms": round((time.time() - start_time) * 1000, 1)
-                }
-            
-            # Execute reasoning with current slots
-            result = self._execute_reasoning(working_memory)
-            if result:
-                # Observe and update
-                self._observe(result, working_memory)
-                # Replan if needed
-                if not self._all_slots_filled(working_memory):
-                    continue
-                return result
         
-        # Final reasoning after slots are filled
-        if working_memory["goal_reached"]:
-            return self._execute_full_reasoning(working_memory, start_time)
+        # Check for district
+        districts = ["bongaigaon", "barpeta", "jorhat", "nagaon", "dibrugarh",
+                    "sonitpur", "dhubri", "goalpara", "kokrajhar", "tinsukia"]
+        for district in districts:
+            if district in query_lower and not pending_slots.get("district"):
+                pending_slots["district"] = district
+                break
         
-        return {
-            "status": "failure",
-            "error": "Max iterations reached without resolution",
-            "query": query,
-            "elapsed_ms": round((time.time() - start_time) * 1000, 1)
-        }
-    
-    def _load_conversation_state(self, user_id: str):
-        """Load conversation state from disk."""
-        state_path = os.path.expanduser(f"~/soca/data/profiles/{user_id}_state.json")
-        if os.path.exists(state_path):
-            try:
-                with open(state_path, 'r') as f:
-                    self.conversation_state[user_id] = json.load(f)
-            except:
-                self.conversation_state[user_id] = {}
-        else:
+        # Check for soil
+        soils = ["loamy", "clay", "sandy", "alluvial"]
+        for soil in soils:
+            if soil in query_lower and not pending_slots.get("soil_type"):
+                pending_slots["soil_type"] = soil
+                break
+        
+        # Update state
+        self.conversation_state[user_id]["pending_slots"] = pending_slots
+        
+        # Check if all slots are filled
+        required = ["season"]
+        if state.get("intent") == "agriculture":
+            required.append("district")
+        
+        all_filled = all(pending_slots.get(slot) for slot in required)
+        
+        if all_filled:
+            # Resume reasoning
+            working_memory = {
+                "query": state.get("query", query),
+                "user_id": user_id,
+                "language": "en",
+                "intent": state.get("intent"),
+                "profile": state.get("profile", {}),
+                "context": state.get("context", {}),
+                "knowledge": [],
+                "ranked_knowledge": [],
+                "evidence": [],
+                "results": {},
+                "synthesis": "",
+                "confidence": 0.5,
+                "approved": False,
+                "sources": [],
+                "trace": [],
+                "pending_slots": pending_slots,
+                "iteration": state.get("iteration", 0) + 1,
+                "goal_reached": False,
+                "observations": [],
+                "actions": [],
+                "goal": state.get("goal", {})
+            }
+            
+            # Clear the goal state
             self.conversation_state[user_id] = {}
-    
-    def _save_conversation_state(self, user_id: str):
-        """Save conversation state to disk."""
-        state_path = os.path.expanduser(f"~/soca/data/profiles/{user_id}_state.json")
-        os.makedirs(os.path.dirname(state_path), exist_ok=True)
-        with open(state_path, 'w') as f:
-            json.dump(self.conversation_state.get(user_id, {}), f, indent=2)
+            self._save_conversation_state(user_id)
+            
+            return self._execute_full_reasoning(working_memory, start_time)
+        else:
+            # Still missing slots
+            missing = []
+            for slot in required:
+                if not pending_slots.get(slot):
+                    missing.append(slot)
+            
+            self._save_conversation_state(user_id)
+            
+            return {
+                "status": "needs_clarification",
+                "questions": self._generate_questions(missing),
+                "missing_slots": missing,
+                "query": state.get("query", query),
+                "intent": state.get("intent"),
+                "trace": self.trace,
+                "elapsed_ms": round((time.time() - start_time) * 1000, 1)
+            }
     
     def _classify_intent(self, query: str, working_memory: dict):
-        """Classify intent BEFORE slot checking."""
         intent_result = self._execute("sutra_045", {"query": query})
         if intent_result.get("status") == "success":
             working_memory["intent"] = intent_result.get("outputs", {}).get("intent", "general")
@@ -145,14 +225,11 @@ class AgenticPipeline:
         self._add_trace("intent", working_memory["intent"])
     
     def _fill_slots_from_query(self, query: str, working_memory: dict):
-        """Extract and fill slots from query."""
         query_lower = query.lower()
         
-        # State (not district)
         if "assam" in query_lower or "axom" in query_lower:
             working_memory["context"]["state"] = "assam"
         
-        # District (actual districts)
         districts = ["bongaigaon", "barpeta", "jorhat", "nagaon", "dibrugarh",
                     "sonitpur", "dhubri", "goalpara", "kokrajhar", "tinsukia",
                     "sivasagar", "golaghat", "lakhimpur", "dhemaji", "morigaon",
@@ -164,7 +241,6 @@ class AgenticPipeline:
                 working_memory["context"]["district"] = district
                 break
         
-        # Season
         seasons = ["kharif", "rabi", "summer", "winter"]
         for season in seasons:
             if season in query_lower:
@@ -172,7 +248,6 @@ class AgenticPipeline:
                 working_memory["context"]["season"] = season
                 break
         
-        # Soil type
         soils = ["loamy", "clay", "sandy", "alluvial"]
         for soil in soils:
             if soil in query_lower:
@@ -180,7 +255,6 @@ class AgenticPipeline:
                 break
     
     def _load_profile(self, user_id: str, working_memory: dict):
-        """Load profile and fill slots."""
         profile_result = self._execute("sutra_076", {
             "action": "load",
             "user_id": user_id
@@ -197,10 +271,7 @@ class AgenticPipeline:
                 working_memory["pending_slots"]["soil_type"] = profile["soil_type"]
     
     def _all_slots_filled(self, working_memory: dict) -> bool:
-        """Check if all required slots are filled."""
-        # Always require season
         required = ["season"]
-        # Agriculture requires district
         if working_memory.get("intent") == "agriculture":
             required.append("district")
         
@@ -210,7 +281,6 @@ class AgenticPipeline:
         return True
     
     def _get_missing_slots(self, working_memory: dict) -> list:
-        """Get list of missing slots."""
         missing = []
         if working_memory.get("intent") == "agriculture":
             if not working_memory["pending_slots"].get("district"):
@@ -222,7 +292,6 @@ class AgenticPipeline:
         return missing
     
     def _generate_questions(self, missing: list) -> list:
-        """Generate questions for missing slots."""
         questions = []
         for slot in missing:
             if slot == "district":
@@ -233,27 +302,24 @@ class AgenticPipeline:
                 questions.append("What type of soil do you have? (loamy/clay/sandy)")
         return questions
     
-    def _execute_reasoning(self, working_memory: dict) -> dict:
-        """Execute reasoning with current slots."""
-        # Run domain sutras with current info
-        return self._execute_full_reasoning(working_memory, time.time())
+    def _load_conversation_state(self, user_id: str):
+        state_path = os.path.expanduser(f"~/soca/data/profiles/{user_id}_state.json")
+        if os.path.exists(state_path):
+            try:
+                with open(state_path, 'r') as f:
+                    self.conversation_state[user_id] = json.load(f)
+            except:
+                self.conversation_state[user_id] = {}
+        else:
+            self.conversation_state[user_id] = {}
     
-    def _observe(self, result: dict, working_memory: dict):
-        """Observe and update working memory from result."""
-        if result:
-            working_memory["observations"].append({
-                "iteration": working_memory["iteration"],
-                "confidence": result.get("confidence", 0.5),
-                "answer": result.get("answer", "")[:50]
-            })
-            # Update slots from result if any
-            if result.get("slots_filled"):
-                for k, v in result["slots_filled"].items():
-                    if v and not working_memory["pending_slots"].get(k):
-                        working_memory["pending_slots"][k] = v
+    def _save_conversation_state(self, user_id: str):
+        state_path = os.path.expanduser(f"~/soca/data/profiles/{user_id}_state.json")
+        os.makedirs(os.path.dirname(state_path), exist_ok=True)
+        with open(state_path, 'w') as f:
+            json.dump(self.conversation_state.get(user_id, {}), f, indent=2)
     
     def _execute_full_reasoning(self, working_memory: dict, start_time: float) -> dict:
-        """Execute full reasoning after all slots are filled."""
         # Knowledge Retrieval
         knowledge_result = self._execute("sutra_074", {
             "query": working_memory["query"],
@@ -264,7 +330,7 @@ class AgenticPipeline:
             working_memory["knowledge"] = knowledge_result.get("outputs", {}).get("knowledge_results", [])
         self._add_trace("knowledge", len(working_memory["knowledge"]))
         
-        # BM25 Ranking (sutra_080)
+        # BM25 Ranking
         ranker_result = self._execute("sutra_080", {
             "query": working_memory["query"],
             "knowledge_results": working_memory["knowledge"],
@@ -328,13 +394,10 @@ class AgenticPipeline:
             working_memory["sources"] = reasoner_result.get("outputs", {}).get("sources", [])
         self._add_trace("reasoner", working_memory["synthesis"][:50])
         
-        # Calculate confidence based on slot completeness
+        # Calculate confidence
         slot_score = self._calculate_slot_confidence(working_memory)
         source_score = min(1.0, len(working_memory["sources"]) * 0.1)
-        quality_score = min(1.0, len(working_memory["ranked_knowledge"]) * 0.05)
-        
-        confidence = round((slot_score * 0.5 + source_score * 0.3 + quality_score * 0.2), 2)
-        confidence = min(1.0, confidence)
+        confidence = round((slot_score * 0.5 + source_score * 0.5), 2)
         
         # Response Validator
         validator_result = self._execute("sutra_072", {
@@ -346,14 +409,6 @@ class AgenticPipeline:
             working_memory["approved"] = validator_result.get("outputs", {}).get("approved", False)
         
         elapsed = time.time() - start_time
-        
-        # Save conversation state
-        self.conversation_state[working_memory["user_id"]] = {
-            "pending_slots": working_memory["pending_slots"],
-            "last_query": working_memory["query"],
-            "intent": working_memory["intent"]
-        }
-        self._save_conversation_state(working_memory["user_id"])
         
         return {
             "status": "success",
@@ -367,14 +422,12 @@ class AgenticPipeline:
             "context": working_memory["context"],
             "slots_filled": working_memory["pending_slots"],
             "ranked_knowledge": working_memory["ranked_knowledge"][:3],
-            "observations": working_memory["observations"],
             "trace": self.trace,
-            "iteration": working_memory["iteration"],
+            "iteration": working_memory.get("iteration", 1),
             "elapsed_ms": round(elapsed * 1000, 1)
         }
     
     def _calculate_slot_confidence(self, working_memory: dict) -> float:
-        """Calculate confidence based on filled slots."""
         filled = 0
         total = 0
         for slot, value in working_memory["pending_slots"].items():
@@ -427,11 +480,6 @@ class AgenticPipeline:
         for k, v in result.get('slots_filled', {}).items():
             if v:
                 lines.append(f"  ├── {k}: {v}")
-        
-        lines.append("")
-        lines.append("📋 Observations:")
-        for obs in result.get('observations', [])[:3]:
-            lines.append(f"  ├── Iteration {obs.get('iteration')}: {obs.get('confidence')}")
         
         lines.append("")
         lines.append("📊 Answer:")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SOCA Agentic CLI v9.0 - Iterative Planner + Slot Filling
+SOCA Agentic CLI v11.0 - Goal Stack + Task Resumption
 """
 
 import sys
@@ -10,8 +10,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from runtime.agentic_pipeline import AgenticPipeline
 
 def main():
-    print("\n🕉️ SOCA Agentic Pipeline (v9.0 - Iterative Planner)")
-    print("=" * 55)
+    print("\n🕉️ SOCA Agentic Pipeline (v11.0 - Goal Stack)")
+    print("=" * 50)
     
     pipeline = AgenticPipeline()
     
@@ -31,12 +31,14 @@ def main():
             print("\n❓ Clarification Needed:")
             for q in result.get("questions", []):
                 print(f"  → {q}")
+            print("\n💡 Tip: Answer the question to resume the goal.")
         else:
             print(f"\n📝 Query: {query}")
             print(f"✅ Answer: {result['answer'][:300]}")
             print(f"📊 Confidence: {result['confidence']:.2f}")
             print(f"🔄 Iteration: {result.get('iteration', 1)}")
             print(f"📍 Slots: {result.get('slots_filled', {})}")
+            print(f"📚 Sources: {len(result.get('sources', []))}")
 
 if __name__ == "__main__":
     main()
