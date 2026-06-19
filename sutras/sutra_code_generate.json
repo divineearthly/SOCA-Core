@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_011",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Generate Python Code",
+  "type": "codegen",
+  "category": "generative",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "specification", "type": "string", "required": true},
+    {"name": "test_cases", "type": "array", "required": false}
+  ],
+  "outputs": [
+    {"name": "code", "type": "string"},
+    {"name": "verified", "type": "boolean"},
+    {"name": "test_results", "type": "array"},
+    {"name": "errors", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.codegen.generate_python",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {
+          "specification": "Calculate factorial of n",
+          "test_cases": [
+            {"inputs": [0], "expected": 1},
+            {"inputs": [5], "expected": 120}
+          ]
+        },
+        "expected": {"verified": true}
+      }
+    ]
+  }
+}
