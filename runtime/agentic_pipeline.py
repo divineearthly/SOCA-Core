@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v22.1 - Fixed Synthesis Integration
+SOCA Agentic Pipeline v22.4 - Optimized Reflection
 """
 
 import sys
@@ -12,7 +12,7 @@ sys.path.append('runtime')
 from soca_runtime import SOCARuntime
 
 GOAL_TTL = 86400
-REFLECTION_THRESHOLD = 0.7
+REFLECTION_THRESHOLD = 0.65  # Changed from 0.7
 MAX_ITERATIONS = 3
 RETRIEVAL_STRATEGIES = ['bm25', 'semantic', 'hybrid', 'deep']
 
@@ -581,6 +581,11 @@ class AgenticPipeline:
         })
         if ranker_result.get("status") == "success":
             working_memory["ranked_knowledge"] = ranker_result.get("outputs", {}).get("ranked_results", [])
+            # FIX 3: Extract sources from ranked knowledge
+            working_memory["sources"] = [
+                r.get("source", r.get("id", f"kb_{i}")) 
+                for i, r in enumerate(working_memory["ranked_knowledge"][:3])
+            ]
         self._add_trace("bm25", len(working_memory["ranked_knowledge"]))
 
         planner_result = self._execute("sutra_069", {
@@ -614,7 +619,6 @@ class AgenticPipeline:
             if result.get("status") == "success":
                 outputs = result.get("outputs", {})
                 results[sutra_id] = outputs
-                # Collect sources
                 if "sources" in outputs:
                     domain_sources.extend(outputs.get("sources", []))
                 for k, v in outputs.items():
@@ -635,12 +639,12 @@ class AgenticPipeline:
 
         self._add_trace("domain", len(results))
 
-        # Use Synthesis Engine (sutra_084)
+        # Synthesis Engine
         synthesis_result = self._execute("sutra_084", {
             "results": working_memory.get("results", {}),
             "slots": working_memory.get("pending_slots", {}),
             "intent": working_memory.get("intent", "general"),
-            "sources": domain_sources,
+            "sources": working_memory.get("sources", []),
             "subgoals": working_memory.get("subgoal_results", {})
         })
 
@@ -648,18 +652,18 @@ class AgenticPipeline:
         recommendation = ""
         ranked_crops = []
         alternatives = []
-        sources = []
+        sources = working_memory.get("sources", [])
 
         if synthesis_result.get("status") == "success":
             synthesis = synthesis_result.get("outputs", {}).get("synthesis", "")
             recommendation = synthesis_result.get("outputs", {}).get("recommendation", "")
             ranked_crops = synthesis_result.get("outputs", {}).get("ranked_crops", [])
             alternatives = synthesis_result.get("outputs", {}).get("alternatives", [])
-            sources = synthesis_result.get("outputs", {}).get("sources", [])
+            sources = synthesis_result.get("outputs", {}).get("sources", []) or sources
             working_memory["synthesis"] = synthesis
             working_memory["sources"] = sources
         else:
-            # Fallback to old reasoner if synthesis fails
+            # Fallback to old reasoner
             reasoner_result = self._execute("sutra_070", {
                 "results": results,
                 "query": working_memory["query"],
@@ -668,9 +672,16 @@ class AgenticPipeline:
             })
             if reasoner_result.get("status") == "success":
                 synthesis = reasoner_result.get("outputs", {}).get("synthesis", "")
-                sources = reasoner_result.get("outputs", {}).get("sources", [])
+                sources = reasoner_result.get("outputs", {}).get("sources", []) or sources
                 working_memory["synthesis"] = synthesis
                 working_memory["sources"] = sources
+
+        # FIX 2: Enrich answer with slots before critic sees it
+        slots = working_memory.get("pending_slots", {})
+        if slots.get("soil_type") and slots["soil_type"] not in synthesis.lower():
+            synthesis += f" | Soil: {slots['soil_type']}"
+        if slots.get("district") and slots["district"] not in synthesis.lower():
+            synthesis += f" | District: {slots['district']}"
 
         self._add_trace("synthesis", synthesis[:50])
 
