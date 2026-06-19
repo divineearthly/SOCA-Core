@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SOCA Agentic CLI v15.0 - True Goal Stack + Reflection Loop
+SOCA Agentic CLI v16.0 - Dynamic Slots + Evidence-Based Reflection
 """
 
 import sys
@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from runtime.agentic_pipeline import AgenticPipeline
 
 def main():
-    print("\n🕉️ SOCA Agentic Pipeline (v15.0 - True Goal Stack)")
+    print("\n🕉️ SOCA Agentic Pipeline (v16.0 - Evidence-Based)")
     print("=" * 55)
     
     pipeline = AgenticPipeline()

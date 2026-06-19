@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v15.0 - True Goal Stack + Reflection Loop
+SOCA Agentic Pipeline v16.0 - Dynamic Slots + Evidence-Based Reflection
 """
 
 import sys
@@ -23,7 +23,6 @@ class AgenticPipeline:
         self.slot_schema = self._load_slot_schema()
     
     def _load_slot_schema(self) -> dict:
-        """Load slot schema from data/schemas/slot_schema.json"""
         schema_path = os.path.expanduser("~/soca/data/schemas/slot_schema.json")
         if os.path.exists(schema_path):
             try:
@@ -37,14 +36,10 @@ class AgenticPipeline:
         start_time = time.time()
         self.trace = []
         
-        # Load conversation state
         self._load_conversation_state(user_id)
         self._ensure_goal_stack(user_id)
-        
-        # Clean expired goals
         self._clean_expired_goals(user_id)
         
-        # Check if there's a waiting goal
         waiting_goal = self._peek_goal(user_id)
         if waiting_goal and waiting_goal.get("status") == "waiting_for_clarification":
             extracted = self._extract_slots(query)
@@ -55,7 +50,6 @@ class AgenticPipeline:
                 else:
                     return self._ask_clarification(user_id, waiting_goal, start_time)
         
-        # Start a new goal
         return self._push_new_goal(query, user_id, start_time)
     
     def _ensure_goal_stack(self, user_id: str):
@@ -133,7 +127,6 @@ class AgenticPipeline:
     def _push_new_goal(self, query: str, user_id: str, start_time: float) -> dict:
         working_memory = self._init_working_memory(query, user_id)
         
-        # Extract slots
         extracted = self._extract_slots(query)
         intent = extracted.get("intent")
         if not intent:
@@ -142,21 +135,26 @@ class AgenticPipeline:
         else:
             working_memory["intent"] = intent
         
-        # Get schema for this intent
+        # Dynamic slots from schema
         schema = self.slot_schema.get(intent, {})
         required_slots = schema.get("required", [])
         optional_slots = schema.get("optional", [])
+        all_slots = required_slots + optional_slots
+        
+        # Initialize dynamic pending slots
+        for slot in all_slots:
+            if slot not in working_memory["pending_slots"]:
+                working_memory["pending_slots"][slot] = None
         
         # Fill slots from query
         for slot, value in extracted.items():
-            if value and slot in required_slots + optional_slots:
+            if value and slot in all_slots:
                 working_memory["pending_slots"][slot] = value
         
-        # Load profile
+        # Load profile (fills district, soil_type if present)
         self._load_profile(user_id, working_memory)
         self._load_observation_memory(user_id, working_memory)
         
-        # Check missing slots
         missing = [s for s in required_slots if not working_memory["pending_slots"].get(s)]
         
         if missing:
@@ -172,12 +170,12 @@ class AgenticPipeline:
                 "status": "waiting_for_clarification",
                 "created_at": time.time(),
                 "iteration": 0,
-                "last_confidence": 0.0
+                "last_confidence": 0.0,
+                "evidence": []
             }
             self._push_goal(user_id, goal)
             return self._ask_clarification(user_id, goal, start_time)
         
-        # All slots filled, execute
         goal = {
             "id": str(uuid.uuid4()),
             "user_id": user_id,
@@ -190,7 +188,8 @@ class AgenticPipeline:
             "status": "ready",
             "created_at": time.time(),
             "iteration": 0,
-            "last_confidence": 0.0
+            "last_confidence": 0.0,
+            "evidence": []
         }
         self._push_goal(user_id, goal)
         return self._execute_goal_with_reflection(user_id, start_time)
@@ -200,47 +199,74 @@ class AgenticPipeline:
         if not goal:
             return {"status": "failure", "error": "No active goal"}
         
-        # Reflection loop
         for iteration in range(MAX_ITERATIONS):
             goal["iteration"] = iteration + 1
             
-            # Build working memory
             working_memory = self._init_working_memory(goal.get("original_query"), user_id)
             working_memory["intent"] = goal.get("intent")
             working_memory["pending_slots"] = goal.get("filled_slots", {}).copy()
             working_memory["profile"] = self._load_profile_only(user_id)
             self._load_observation_memory(user_id, working_memory)
             
-            # Execute reasoning
             result = self._execute_full_reasoning(working_memory, start_time)
-            
-            # Evaluate confidence
             confidence = result.get("confidence", 0.0)
             goal["last_confidence"] = confidence
             
-            # If confidence is high enough, return
+            # Store evidence
+            if "sources" in result:
+                goal["evidence"] = result["sources"]
+            
             if confidence >= REFLECTION_THRESHOLD:
                 self._save_observation_memory(user_id, working_memory)
                 self._pop_goal(user_id)
+                result["iteration"] = iteration + 1
                 return result
             
-            # If not, try to replan
+            # Replan based on evidence
             if iteration < MAX_ITERATIONS - 1:
-                self._replan(goal, result)
+                replan_result = self._replan_based_on_evidence(goal, result)
+                if replan_result:
+                    # Continue to next iteration with new info
+                    continue
         
-        # After max iterations, return best result
         self._save_observation_memory(user_id, working_memory)
         self._pop_goal(user_id)
+        result["iteration"] = goal.get("iteration", MAX_ITERATIONS)
         return result
     
-    def _replan(self, goal: dict, result: dict):
-        """Replan based on previous result."""
-        # If confidence is low, check if we can get more info
-        if result.get("confidence", 0) < 0.3:
-            # Add a generic observation slot
-            goal["filled_slots"]["_needs_more_info"] = True
-            goal["status"] = "waiting_for_clarification"
-            self._save_conversation_state(goal.get("user_id"))
+    def _replan_based_on_evidence(self, goal: dict, result: dict) -> bool:
+        """Replan based on evidence quality."""
+        confidence = result.get("confidence", 0.0)
+        
+        if confidence < 0.4:
+            # Very low confidence - need more information
+            # Check which slots are missing
+            missing = goal.get("missing_slots", [])
+            required = goal.get("required_slots", [])
+            filled = goal.get("filled_slots", {})
+            
+            # Find unfilled required slots
+            new_missing = [s for s in required if not filled.get(s)]
+            if new_missing and new_missing != missing:
+                goal["missing_slots"] = new_missing
+                goal["status"] = "waiting_for_clarification"
+                self._save_conversation_state(goal.get("user_id"))
+                return True
+        
+        elif confidence < 0.6:
+            # Medium-low confidence - check if optional slots can help
+            optional = goal.get("optional_slots", [])
+            filled = goal.get("filled_slots", {})
+            
+            # Find unfilled optional slots
+            new_missing = [s for s in optional if not filled.get(s)]
+            if new_missing:
+                goal["missing_slots"] = new_missing[:2]
+                goal["status"] = "waiting_for_clarification"
+                self._save_conversation_state(goal.get("user_id"))
+                return True
+        
+        return False
     
     def _load_profile_only(self, user_id: str) -> dict:
         profile_result = self._execute("sutra_076", {"action": "load", "user_id": user_id})
@@ -295,7 +321,7 @@ class AgenticPipeline:
             "approved": False,
             "sources": [],
             "trace": [],
-            "pending_slots": {"season": None, "soil_type": None, "district": None},
+            "pending_slots": {},
             "iteration": 0,
             "goal_reached": False,
             "observations": [],
@@ -406,11 +432,26 @@ class AgenticPipeline:
             working_memory["sources"] = reasoner_result.get("outputs", {}).get("sources", [])
         self._add_trace("reasoner", working_memory["synthesis"][:50])
         
-        # Calculate confidence
+        # Evidence-based confidence
+        # Use Fact Checker (sutra_071) and Evidence Quality Scorer (sutra_079)
+        fact_result = self._execute("sutra_071", {
+            "answer": working_memory["synthesis"],
+            "sources": working_memory["sources"],
+            "domain": working_memory["intent"]
+        })
+        fact_conf = fact_result.get("confidence", 0.5) if fact_result.get("status") == "success" else 0.5
+        
+        quality_result = self._execute("sutra_079", {
+            "answer": working_memory["synthesis"],
+            "sources": working_memory["sources"],
+            "ranked_results": working_memory["ranked_knowledge"],
+            "domain": working_memory["intent"]
+        })
+        quality_conf = quality_result.get("outputs", {}).get("quality_score", 0.5) if quality_result.get("status") == "success" else 0.5
+        
+        # Combine evidence scores
         slot_score = self._calculate_slot_confidence(working_memory)
-        source_score = min(1.0, len(working_memory["sources"]) * 0.1)
-        knowledge_score = min(1.0, len(working_memory["ranked_knowledge"]) * 0.05)
-        confidence = round((slot_score * 0.4 + source_score * 0.3 + knowledge_score * 0.3), 2)
+        confidence = round((slot_score * 0.3 + fact_conf * 0.35 + quality_conf * 0.35), 2)
         confidence = min(1.0, confidence)
         
         # Response Validator
@@ -442,13 +483,10 @@ class AgenticPipeline:
         }
     
     def _calculate_slot_confidence(self, working_memory: dict) -> float:
-        filled = 0
-        total = 0
-        for slot, value in working_memory["pending_slots"].items():
-            if slot in ["season", "district", "soil_type"]:
-                total += 1
-                if value:
-                    filled += 1
+        if not working_memory.get("pending_slots"):
+            return 0.5
+        filled = sum(1 for v in working_memory["pending_slots"].values() if v)
+        total = len(working_memory["pending_slots"])
         if total == 0:
             return 0.5
         return filled / total
