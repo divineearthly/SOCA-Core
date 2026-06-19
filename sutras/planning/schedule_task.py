@@ -21,31 +21,22 @@ def execute(inputs: dict, context: dict = None) -> dict:
     
     edges = graph_data.get('edges', [])
     
-    # OPTIMIZATION: Build adjacency and indegree once
-    # Instead of scanning edges for each node
-    adjacency = {}
-    indegree = {}
-    
-    for node in sorted_nodes:
-        adjacency[node] = []
-        indegree[node] = 0
+    # Build adjacency and indegree
+    adjacency = {node: [] for node in sorted_nodes}
+    indegree = {node: 0 for node in sorted_nodes}
     
     for src, dst in edges:
         if src in adjacency and dst in adjacency:
             adjacency[src].append(dst)
             indegree[dst] = indegree.get(dst, 0) + 1
     
-    # Now create schedule levels (parallel execution)
+    # Create schedule levels (parallel execution)
     schedule = []
     remaining = set(sorted_nodes)
-    executed = set()
     
     while remaining:
-        # Find nodes whose dependencies are satisfied
-        ready = []
-        for node in remaining:
-            if indegree.get(node, 0) == 0:
-                ready.append(node)
+        # Find nodes with indegree 0
+        ready = [node for node in remaining if indegree.get(node, 0) == 0]
         
         if not ready:
             return {
@@ -54,17 +45,15 @@ def execute(inputs: dict, context: dict = None) -> dict:
                 "trace": {
                     "sutra_id": "sutra_009",
                     "version": "1.0.0",
-                    "error": "Deadlock detected"
+                    "error": f"Deadlock detected. Remaining: {list(remaining)[:10]}"
                 }
             }
         
         schedule.append(ready)
         
-        # Update indegree for nodes that depend on ready nodes
+        # Remove ready nodes and update indegrees
         for node in ready:
             remaining.remove(node)
-            executed.add(node)
-            # Decrease indegree of downstream nodes
             for dep in adjacency.get(node, []):
                 if dep in remaining:
                     indegree[dep] = indegree.get(dep, 0) - 1
