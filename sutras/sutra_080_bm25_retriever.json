@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_080",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "BM25 Retriever",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true},
+    {"name": "knowledge_results", "type": "array", "required": false},
+    {"name": "top_k", "type": "integer", "required": false}
+  ],
+  "outputs": [
+    {"name": "ranked_results", "type": "array"},
+    {"name": "count", "type": "integer"},
+    {"name": "top_score", "type": "number"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.bm25_retriever",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
