@@ -9,10 +9,16 @@ import json
 import time
 import uuid
 import os
+import sys
 from typing import List, Dict, Any
 
-# Use relative import
-from .registry_manager import RegistryManager
+# Ensure project root is in path
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
+# Use absolute import
+from runtime.registry_manager import RegistryManager
 
 class SOCARuntime:
     def __init__(self, registry_path: str = "registry/soca.db"):
