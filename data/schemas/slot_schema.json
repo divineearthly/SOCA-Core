@@ -1,0 +1,52 @@
+{
+  "agriculture": {
+    "required": ["season", "district"],
+    "optional": ["soil_type", "crop"],
+    "questions": {
+      "season": "Which season are you planning to grow in? (kharif/rabi/summer)",
+      "district": "Which district are you in?",
+      "soil_type": "What type of soil do you have? (loamy/clay/sandy)",
+      "crop": "Which crop are you asking about?"
+    }
+  },
+  "education": {
+    "required": ["topic"],
+    "optional": ["level"],
+    "questions": {
+      "topic": "What topic are you studying?",
+      "level": "What grade or level?"
+    }
+  },
+  "translation": {
+    "required": ["language"],
+    "optional": ["word"],
+    "questions": {
+      "language": "Which language? (hindi/bengali/assamese/sanskrit)",
+      "word": "Which word would you like to translate?"
+    }
+  },
+  "market": {
+    "required": ["crop"],
+    "optional": ["district"],
+    "questions": {
+      "crop": "Which crop are you checking prices for?",
+      "district": "Which district?"
+    }
+  },
+  "medicinal": {
+    "required": ["plant"],
+    "optional": ["use"],
+    "questions": {
+      "plant": "Which medicinal plant? (tulsi/neem/ginger/turmeric)",
+      "use": "What condition are you treating?"
+    }
+  },
+  "livestock": {
+    "required": ["animal"],
+    "optional": ["issue"],
+    "questions": {
+      "animal": "Which animal? (cattle/goat/poultry)",
+      "issue": "What is the issue?"
+    }
+  }
+}

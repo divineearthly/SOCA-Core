@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v14.0 - Generic Slot Extractor + True Goal Stack
+SOCA Agentic Pipeline v15.0 - True Goal Stack + Reflection Loop
 """
 
 import sys
@@ -12,12 +12,26 @@ sys.path.append('runtime')
 from soca_runtime import SOCARuntime
 
 GOAL_TTL = 86400  # 24 hours
+REFLECTION_THRESHOLD = 0.6
+MAX_ITERATIONS = 3
 
 class AgenticPipeline:
     def __init__(self):
         self.runtime = SOCARuntime()
         self.trace = []
         self.conversation_state = {}
+        self.slot_schema = self._load_slot_schema()
+    
+    def _load_slot_schema(self) -> dict:
+        """Load slot schema from data/schemas/slot_schema.json"""
+        schema_path = os.path.expanduser("~/soca/data/schemas/slot_schema.json")
+        if os.path.exists(schema_path):
+            try:
+                with open(schema_path, 'r') as f:
+                    return json.load(f)
+            except:
+                pass
+        return {}
     
     def process(self, query: str, user_id: str = "anonymous") -> dict:
         start_time = time.time()
@@ -25,37 +39,71 @@ class AgenticPipeline:
         
         # Load conversation state
         self._load_conversation_state(user_id)
+        self._ensure_goal_stack(user_id)
         
         # Clean expired goals
         self._clean_expired_goals(user_id)
         
-        # Check if there's an active goal
-        active_goal = self._get_active_goal(user_id)
-        
-        if active_goal and active_goal.get("status") == "waiting_for_clarification":
-            # Try to extract slots from query
+        # Check if there's a waiting goal
+        waiting_goal = self._peek_goal(user_id)
+        if waiting_goal and waiting_goal.get("status") == "waiting_for_clarification":
             extracted = self._extract_slots(query)
-            filled = self._try_fill_slots(extracted, active_goal)
+            filled = self._try_fill_slots(extracted, waiting_goal)
             if filled:
-                return self._resume_goal(user_id, active_goal, start_time)
+                if waiting_goal.get("status") == "ready":
+                    return self._execute_goal_with_reflection(user_id, start_time)
+                else:
+                    return self._ask_clarification(user_id, waiting_goal, start_time)
         
         # Start a new goal
-        return self._start_new_goal(query, user_id, start_time)
+        return self._push_new_goal(query, user_id, start_time)
+    
+    def _ensure_goal_stack(self, user_id: str):
+        if user_id not in self.conversation_state:
+            self.conversation_state[user_id] = {}
+        if "goal_stack" not in self.conversation_state[user_id]:
+            self.conversation_state[user_id]["goal_stack"] = []
+    
+    def _peek_goal(self, user_id: str) -> dict:
+        stack = self.conversation_state.get(user_id, {}).get("goal_stack", [])
+        if stack:
+            return stack[-1]
+        return None
+    
+    def _push_goal(self, user_id: str, goal: dict):
+        self.conversation_state[user_id]["goal_stack"].append(goal)
+        self._save_conversation_state(user_id)
+    
+    def _pop_goal(self, user_id: str) -> dict:
+        stack = self.conversation_state.get(user_id, {}).get("goal_stack", [])
+        if stack:
+            goal = stack.pop()
+            self._save_conversation_state(user_id)
+            return goal
+        return None
+    
+    def _clean_expired_goals(self, user_id: str):
+        stack = self.conversation_state.get(user_id, {}).get("goal_stack", [])
+        if stack:
+            goal = stack[-1]
+            created_at = goal.get("created_at", 0)
+            if time.time() - created_at > GOAL_TTL:
+                stack.pop()
+                self._save_conversation_state(user_id)
     
     def _extract_slots(self, query: str) -> dict:
-        """Extract slots using sutra_081."""
         result = self._execute("sutra_081", {"query": query})
         if result.get("status") == "success":
             return result.get("outputs", {}).get("slots", {})
         return {}
     
     def _try_fill_slots(self, extracted: dict, goal: dict) -> bool:
-        """Try to fill slots from extracted data."""
         filled = False
         for slot, value in extracted.items():
             if value and not goal.get("filled_slots", {}).get(slot):
-                goal["filled_slots"][slot] = value
-                filled = True
+                if slot in goal.get("required_slots", []) or slot in goal.get("optional_slots", []):
+                    goal["filled_slots"][slot] = value
+                    filled = True
         
         if filled:
             required = goal.get("required_slots", [])
@@ -66,117 +114,133 @@ class AgenticPipeline:
                 goal["status"] = "waiting_for_clarification"
             self._save_conversation_state(goal.get("user_id"))
             return True
-        
         return False
     
-    def _clean_expired_goals(self, user_id: str):
-        state = self.conversation_state.get(user_id, {})
-        active_goal = state.get("active_goal")
-        if active_goal:
-            created_at = active_goal.get("created_at", 0)
-            if time.time() - created_at > GOAL_TTL:
-                state["active_goal"] = None
-                self._save_conversation_state(user_id)
+    def _ask_clarification(self, user_id: str, goal: dict, start_time: float) -> dict:
+        missing = [s for s in goal.get("required_slots", []) if not goal["filled_slots"].get(s)]
+        questions = self._generate_questions(missing, goal.get("intent"))
+        return {
+            "status": "needs_clarification",
+            "questions": questions,
+            "missing_slots": missing,
+            "goal_id": goal.get("id"),
+            "query": goal.get("original_query"),
+            "intent": goal.get("intent"),
+            "trace": self.trace,
+            "elapsed_ms": round((time.time() - start_time) * 1000, 1)
+        }
     
-    def _get_active_goal(self, user_id: str) -> dict:
-        state = self.conversation_state.get(user_id, {})
-        return state.get("active_goal", None)
-    
-    def _start_new_goal(self, query: str, user_id: str, start_time: float) -> dict:
-        # Initialize working memory
+    def _push_new_goal(self, query: str, user_id: str, start_time: float) -> dict:
         working_memory = self._init_working_memory(query, user_id)
         
         # Extract slots
         extracted = self._extract_slots(query)
+        intent = extracted.get("intent")
+        if not intent:
+            self._classify_intent(query, working_memory)
+            intent = working_memory.get("intent", "general")
+        else:
+            working_memory["intent"] = intent
+        
+        # Get schema for this intent
+        schema = self.slot_schema.get(intent, {})
+        required_slots = schema.get("required", [])
+        optional_slots = schema.get("optional", [])
+        
+        # Fill slots from query
         for slot, value in extracted.items():
-            if value and slot in working_memory["pending_slots"]:
+            if value and slot in required_slots + optional_slots:
                 working_memory["pending_slots"][slot] = value
         
-        # Load profile and observation memory
+        # Load profile
         self._load_profile(user_id, working_memory)
         self._load_observation_memory(user_id, working_memory)
         
-        # Classify intent
-        if not working_memory.get("intent"):
-            self._classify_intent(query, working_memory)
+        # Check missing slots
+        missing = [s for s in required_slots if not working_memory["pending_slots"].get(s)]
         
-        # Get required slots from planner
-        planner_result = self._execute("sutra_069", {
-            "query": query,
-            "intent": working_memory["intent"]
-        })
-        required_slots = planner_result.get("outputs", {}).get("required_slots", [])
-        
-        # Always require season for agriculture
-        if working_memory.get("intent") == "agriculture" and "season" not in required_slots:
-            required_slots.append("season")
-        
-        # Find missing slots
-        missing_slots = [
-            slot for slot in required_slots
-            if slot and not working_memory["pending_slots"].get(slot)
-        ]
-        
-        if missing_slots:
+        if missing:
             goal = {
                 "id": str(uuid.uuid4()),
                 "user_id": user_id,
-                "intent": working_memory["intent"],
+                "intent": intent,
                 "original_query": query,
                 "required_slots": required_slots,
+                "optional_slots": optional_slots,
                 "filled_slots": working_memory["pending_slots"].copy(),
-                "missing_slots": missing_slots,
+                "missing_slots": missing,
                 "status": "waiting_for_clarification",
-                "created_at": time.time()
+                "created_at": time.time(),
+                "iteration": 0,
+                "last_confidence": 0.0
             }
-            
-            # Save to goal stack
-            if user_id not in self.conversation_state:
-                self.conversation_state[user_id] = {}
-            self.conversation_state[user_id]["active_goal"] = goal
-            self._save_conversation_state(user_id)
-            
-            questions = self._generate_questions(missing_slots)
-            
-            return {
-                "status": "needs_clarification",
-                "questions": questions,
-                "missing_slots": missing_slots,
-                "goal_id": goal["id"],
-                "query": query,
-                "intent": working_memory["intent"],
-                "trace": self.trace,
-                "elapsed_ms": round((time.time() - start_time) * 1000, 1)
-            }
+            self._push_goal(user_id, goal)
+            return self._ask_clarification(user_id, goal, start_time)
         
-        return self._execute_full_reasoning(working_memory, start_time)
+        # All slots filled, execute
+        goal = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "intent": intent,
+            "original_query": query,
+            "required_slots": required_slots,
+            "optional_slots": optional_slots,
+            "filled_slots": working_memory["pending_slots"].copy(),
+            "missing_slots": [],
+            "status": "ready",
+            "created_at": time.time(),
+            "iteration": 0,
+            "last_confidence": 0.0
+        }
+        self._push_goal(user_id, goal)
+        return self._execute_goal_with_reflection(user_id, start_time)
     
-    def _resume_goal(self, user_id: str, goal: dict, start_time: float) -> dict:
-        working_memory = self._init_working_memory(goal.get("original_query"), user_id)
-        working_memory["intent"] = goal.get("intent")
-        working_memory["pending_slots"] = goal.get("filled_slots", {}).copy()
-        working_memory["profile"] = self._load_profile_only(user_id)
-        self._load_observation_memory(user_id, working_memory)
+    def _execute_goal_with_reflection(self, user_id: str, start_time: float) -> dict:
+        goal = self._peek_goal(user_id)
+        if not goal:
+            return {"status": "failure", "error": "No active goal"}
         
-        goal["status"] = "executing"
-        self._save_conversation_state(user_id)
+        # Reflection loop
+        for iteration in range(MAX_ITERATIONS):
+            goal["iteration"] = iteration + 1
+            
+            # Build working memory
+            working_memory = self._init_working_memory(goal.get("original_query"), user_id)
+            working_memory["intent"] = goal.get("intent")
+            working_memory["pending_slots"] = goal.get("filled_slots", {}).copy()
+            working_memory["profile"] = self._load_profile_only(user_id)
+            self._load_observation_memory(user_id, working_memory)
+            
+            # Execute reasoning
+            result = self._execute_full_reasoning(working_memory, start_time)
+            
+            # Evaluate confidence
+            confidence = result.get("confidence", 0.0)
+            goal["last_confidence"] = confidence
+            
+            # If confidence is high enough, return
+            if confidence >= REFLECTION_THRESHOLD:
+                self._save_observation_memory(user_id, working_memory)
+                self._pop_goal(user_id)
+                return result
+            
+            # If not, try to replan
+            if iteration < MAX_ITERATIONS - 1:
+                self._replan(goal, result)
         
-        result = self._execute_full_reasoning(working_memory, start_time)
-        
-        self.conversation_state[user_id]["active_goal"] = None
-        if "goal_history" not in self.conversation_state[user_id]:
-            self.conversation_state[user_id]["goal_history"] = []
-        self.conversation_state[user_id]["goal_history"].append({
-            "goal_id": goal.get("id"),
-            "query": goal.get("original_query"),
-            "result": result.get("answer", "")[:100],
-            "completed_at": time.time()
-        })
-        if len(self.conversation_state[user_id]["goal_history"]) > 10:
-            self.conversation_state[user_id]["goal_history"] = self.conversation_state[user_id]["goal_history"][-10:]
-        self._save_conversation_state(user_id)
-        
+        # After max iterations, return best result
+        self._save_observation_memory(user_id, working_memory)
+        self._pop_goal(user_id)
         return result
+    
+    def _replan(self, goal: dict, result: dict):
+        """Replan based on previous result."""
+        # If confidence is low, check if we can get more info
+        if result.get("confidence", 0) < 0.3:
+            # Add a generic observation slot
+            goal["filled_slots"]["_needs_more_info"] = True
+            goal["status"] = "waiting_for_clarification"
+            self._save_conversation_state(goal.get("user_id"))
     
     def _load_profile_only(self, user_id: str) -> dict:
         profile_result = self._execute("sutra_076", {"action": "load", "user_id": user_id})
@@ -245,20 +309,10 @@ class AgenticPipeline:
             working_memory["intent"] = intent_result.get("outputs", {}).get("intent", "general")
         self._add_trace("intent", working_memory["intent"])
     
-    def _generate_questions(self, missing: list) -> list:
-        questions = []
-        for slot in missing:
-            if slot == "district":
-                questions.append("Which district are you in?")
-            elif slot == "season":
-                questions.append("Which season are you planning to grow in? (kharif/rabi/summer)")
-            elif slot == "soil_type":
-                questions.append("What type of soil do you have? (loamy/clay/sandy)")
-            elif slot == "crop":
-                questions.append("Which crop are you asking about?")
-            elif slot == "language":
-                questions.append("Which language?")
-        return questions
+    def _generate_questions(self, missing: list, intent: str = "general") -> list:
+        schema = self.slot_schema.get(intent, {})
+        questions = schema.get("questions", {})
+        return [questions.get(slot, f"What is the {slot}?") for slot in missing]
     
     def _load_conversation_state(self, user_id: str):
         state_path = os.path.expanduser(f"~/soca/data/profiles/{user_id}_state.json")
@@ -367,8 +421,6 @@ class AgenticPipeline:
         })
         if validator_result.get("status") == "success":
             working_memory["approved"] = validator_result.get("outputs", {}).get("approved", False)
-        
-        self._save_observation_memory(working_memory["user_id"], working_memory)
         
         elapsed = time.time() - start_time
         
