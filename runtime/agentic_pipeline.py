@@ -1,10 +1,9 @@
 """
-SOCA Agentic Pipeline v13.0 - Multi-Goal Agent with Planner-Driven Slots
+SOCA Agentic Pipeline v14.0 - Generic Slot Extractor + True Goal Stack
 """
 
 import sys
 import time
-import re
 import json
 import os
 import uuid
@@ -12,14 +11,12 @@ from collections import Counter
 sys.path.append('runtime')
 from soca_runtime import SOCARuntime
 
-# Goal expiration (24 hours)
-GOAL_TTL = 86400
+GOAL_TTL = 86400  # 24 hours
 
 class AgenticPipeline:
     def __init__(self):
         self.runtime = SOCARuntime()
         self.trace = []
-        self.max_iterations = 3
         self.conversation_state = {}
     
     def process(self, query: str, user_id: str = "anonymous") -> dict:
@@ -32,68 +29,37 @@ class AgenticPipeline:
         # Clean expired goals
         self._clean_expired_goals(user_id)
         
-        # Check if there's an active goal waiting for clarification
+        # Check if there's an active goal
         active_goal = self._get_active_goal(user_id)
         
         if active_goal and active_goal.get("status") == "waiting_for_clarification":
-            # Try to fill the missing slot with the query
-            filled = self._try_fill_slot(query, active_goal)
+            # Try to extract slots from query
+            extracted = self._extract_slots(query)
+            filled = self._try_fill_slots(extracted, active_goal)
             if filled:
-                # Resume the goal
                 return self._resume_goal(user_id, active_goal, start_time)
         
         # Start a new goal
         return self._start_new_goal(query, user_id, start_time)
     
-    def _clean_expired_goals(self, user_id: str):
-        """Remove expired goals."""
-        state = self.conversation_state.get(user_id, {})
-        active_goal = state.get("active_goal")
-        if active_goal:
-            created_at = active_goal.get("created_at", 0)
-            if time.time() - created_at > GOAL_TTL:
-                state["active_goal"] = None
-                self._save_conversation_state(user_id)
+    def _extract_slots(self, query: str) -> dict:
+        """Extract slots using sutra_081."""
+        result = self._execute("sutra_081", {"query": query})
+        if result.get("status") == "success":
+            return result.get("outputs", {}).get("slots", {})
+        return {}
     
-    def _get_active_goal(self, user_id: str) -> dict:
-        """Get the active goal for a user."""
-        state = self.conversation_state.get(user_id, {})
-        return state.get("active_goal", None)
-    
-    def _try_fill_slot(self, query: str, goal: dict) -> bool:
-        """Try to fill a missing slot from the query."""
-        query_lower = query.lower()
-        slots_filled = False
+    def _try_fill_slots(self, extracted: dict, goal: dict) -> bool:
+        """Try to fill slots from extracted data."""
+        filled = False
+        for slot, value in extracted.items():
+            if value and not goal.get("filled_slots", {}).get(slot):
+                goal["filled_slots"][slot] = value
+                filled = True
         
-        # Check for season
-        seasons = {"kharif": "kharif", "rabi": "rabi", "summer": "summer", "winter": "winter",
-                   "monsoon": "kharif", "rainy": "kharif"}
-        for key, value in seasons.items():
-            if key in query_lower and not goal.get("filled_slots", {}).get("season"):
-                goal["filled_slots"]["season"] = value
-                slots_filled = True
-                break
-        
-        # Check for district
-        districts = ["bongaigaon", "barpeta", "jorhat", "nagaon", "dibrugarh",
-                    "sonitpur", "dhubri", "goalpara", "kokrajhar", "tinsukia"]
-        for district in districts:
-            if district in query_lower and not goal.get("filled_slots", {}).get("district"):
-                goal["filled_slots"]["district"] = district
-                slots_filled = True
-                break
-        
-        # Check for soil
-        soils = ["loamy", "clay", "sandy", "alluvial"]
-        for soil in soils:
-            if soil in query_lower and not goal.get("filled_slots", {}).get("soil_type"):
-                goal["filled_slots"]["soil_type"] = soil
-                slots_filled = True
-                break
-        
-        if slots_filled:
+        if filled:
             required = goal.get("required_slots", [])
-            all_filled = all(goal.get("filled_slots", {}).get(slot) for slot in required)
+            all_filled = all(goal["filled_slots"].get(slot) for slot in required if slot)
             if all_filled:
                 goal["status"] = "ready"
             else:
@@ -103,39 +69,55 @@ class AgenticPipeline:
         
         return False
     
+    def _clean_expired_goals(self, user_id: str):
+        state = self.conversation_state.get(user_id, {})
+        active_goal = state.get("active_goal")
+        if active_goal:
+            created_at = active_goal.get("created_at", 0)
+            if time.time() - created_at > GOAL_TTL:
+                state["active_goal"] = None
+                self._save_conversation_state(user_id)
+    
+    def _get_active_goal(self, user_id: str) -> dict:
+        state = self.conversation_state.get(user_id, {})
+        return state.get("active_goal", None)
+    
     def _start_new_goal(self, query: str, user_id: str, start_time: float) -> dict:
-        """Start a new goal."""
         # Initialize working memory
         working_memory = self._init_working_memory(query, user_id)
         
-        # Fill slots from query
-        self._fill_slots_from_query(query, working_memory)
+        # Extract slots
+        extracted = self._extract_slots(query)
+        for slot, value in extracted.items():
+            if value and slot in working_memory["pending_slots"]:
+                working_memory["pending_slots"][slot] = value
         
-        # Load profile (fill district and soil_type, but NOT season)
+        # Load profile and observation memory
         self._load_profile(user_id, working_memory)
-        
-        # Load observation memory
         self._load_observation_memory(user_id, working_memory)
         
         # Classify intent
-        self._classify_intent(query, working_memory)
+        if not working_memory.get("intent"):
+            self._classify_intent(query, working_memory)
         
-        # Get required slots from planner (sutra_069)
+        # Get required slots from planner
         planner_result = self._execute("sutra_069", {
             "query": query,
             "intent": working_memory["intent"]
         })
-        required_slots = planner_result.get("outputs", {}).get("required_slots", ["season"])
+        required_slots = planner_result.get("outputs", {}).get("required_slots", [])
         
-        # If agriculture, ensure season is always required
+        # Always require season for agriculture
         if working_memory.get("intent") == "agriculture" and "season" not in required_slots:
             required_slots.append("season")
         
-        # Check if all required slots are filled
-        all_filled = all(working_memory["pending_slots"].get(slot) for slot in required_slots)
+        # Find missing slots
+        missing_slots = [
+            slot for slot in required_slots
+            if slot and not working_memory["pending_slots"].get(slot)
+        ]
         
-        if not all_filled:
-            # Create a goal
+        if missing_slots:
             goal = {
                 "id": str(uuid.uuid4()),
                 "user_id": user_id,
@@ -143,22 +125,23 @@ class AgenticPipeline:
                 "original_query": query,
                 "required_slots": required_slots,
                 "filled_slots": working_memory["pending_slots"].copy(),
+                "missing_slots": missing_slots,
                 "status": "waiting_for_clarification",
                 "created_at": time.time()
             }
             
-            # Save goal
+            # Save to goal stack
+            if user_id not in self.conversation_state:
+                self.conversation_state[user_id] = {}
             self.conversation_state[user_id]["active_goal"] = goal
             self._save_conversation_state(user_id)
             
-            # Generate questions for missing slots
-            missing = [slot for slot in required_slots if not working_memory["pending_slots"].get(slot)]
-            questions = self._generate_questions(missing)
+            questions = self._generate_questions(missing_slots)
             
             return {
                 "status": "needs_clarification",
                 "questions": questions,
-                "missing_slots": missing,
+                "missing_slots": missing_slots,
                 "goal_id": goal["id"],
                 "query": query,
                 "intent": working_memory["intent"],
@@ -166,28 +149,21 @@ class AgenticPipeline:
                 "elapsed_ms": round((time.time() - start_time) * 1000, 1)
             }
         
-        # All slots filled, execute reasoning
         return self._execute_full_reasoning(working_memory, start_time)
     
     def _resume_goal(self, user_id: str, goal: dict, start_time: float) -> dict:
-        """Resume a goal after slots are filled."""
-        # Build working memory from goal
         working_memory = self._init_working_memory(goal.get("original_query"), user_id)
         working_memory["intent"] = goal.get("intent")
         working_memory["pending_slots"] = goal.get("filled_slots", {}).copy()
         working_memory["profile"] = self._load_profile_only(user_id)
         self._load_observation_memory(user_id, working_memory)
         
-        # Mark as executing
         goal["status"] = "executing"
         self._save_conversation_state(user_id)
         
-        # Execute reasoning
         result = self._execute_full_reasoning(working_memory, start_time)
         
-        # Clear the active goal after successful execution
         self.conversation_state[user_id]["active_goal"] = None
-        # Store in goal history
         if "goal_history" not in self.conversation_state[user_id]:
             self.conversation_state[user_id]["goal_history"] = []
         self.conversation_state[user_id]["goal_history"].append({
@@ -196,41 +172,46 @@ class AgenticPipeline:
             "result": result.get("answer", "")[:100],
             "completed_at": time.time()
         })
-        # Keep only last 10 goals
         if len(self.conversation_state[user_id]["goal_history"]) > 10:
             self.conversation_state[user_id]["goal_history"] = self.conversation_state[user_id]["goal_history"][-10:]
         self._save_conversation_state(user_id)
         
         return result
     
+    def _load_profile_only(self, user_id: str) -> dict:
+        profile_result = self._execute("sutra_076", {"action": "load", "user_id": user_id})
+        if profile_result.get("status") == "success":
+            return profile_result.get("outputs", {}).get("profile", {})
+        return {}
+    
+    def _load_profile(self, user_id: str, working_memory: dict):
+        profile = self._load_profile_only(user_id)
+        working_memory["profile"] = profile
+        if profile.get("district") and not working_memory["pending_slots"].get("district"):
+            working_memory["pending_slots"]["district"] = profile["district"]
+        if profile.get("soil_type") and not working_memory["pending_slots"].get("soil_type"):
+            working_memory["pending_slots"]["soil_type"] = profile["soil_type"]
+    
     def _load_observation_memory(self, user_id: str, working_memory: dict):
-        """Load observation memory and fill slots."""
         state = self.conversation_state.get(user_id, {})
-        observations = state.get("observations", {})
-        
-        # Fill from observations if not already set
-        if observations.get("district") and not working_memory["pending_slots"].get("district"):
-            working_memory["pending_slots"]["district"] = observations["district"]
-            working_memory["context"]["district"] = observations["district"]
-        
-        if observations.get("soil_type") and not working_memory["pending_slots"].get("soil_type"):
-            working_memory["pending_slots"]["soil_type"] = observations["soil_type"]
-        
-        if observations.get("last_crop") and not working_memory.get("last_crop"):
-            working_memory["last_crop"] = observations["last_crop"]
+        obs = state.get("observations", {})
+        if obs.get("district") and not working_memory["pending_slots"].get("district"):
+            working_memory["pending_slots"]["district"] = obs["district"]
+        if obs.get("soil_type") and not working_memory["pending_slots"].get("soil_type"):
+            working_memory["pending_slots"]["soil_type"] = obs["soil_type"]
+        if obs.get("last_crop"):
+            working_memory["last_crop"] = obs["last_crop"]
     
     def _save_observation_memory(self, user_id: str, working_memory: dict):
-        """Save observation memory from working memory."""
-        observations = {}
+        obs = {}
         if working_memory.get("pending_slots", {}).get("district"):
-            observations["district"] = working_memory["pending_slots"]["district"]
+            obs["district"] = working_memory["pending_slots"]["district"]
         if working_memory.get("pending_slots", {}).get("soil_type"):
-            observations["soil_type"] = working_memory["pending_slots"]["soil_type"]
+            obs["soil_type"] = working_memory["pending_slots"]["soil_type"]
         if working_memory.get("last_crop"):
-            observations["last_crop"] = working_memory["last_crop"]
-        
-        if observations:
-            self.conversation_state[user_id]["observations"] = observations
+            obs["last_crop"] = working_memory["last_crop"]
+        if obs:
+            self.conversation_state[user_id]["observations"] = obs
             self._save_conversation_state(user_id)
     
     def _init_working_memory(self, query: str, user_id: str) -> dict:
@@ -250,11 +231,7 @@ class AgenticPipeline:
             "approved": False,
             "sources": [],
             "trace": [],
-            "pending_slots": {
-                "season": None,
-                "soil_type": None,
-                "district": None
-            },
+            "pending_slots": {"season": None, "soil_type": None, "district": None},
             "iteration": 0,
             "goal_reached": False,
             "observations": [],
@@ -262,65 +239,11 @@ class AgenticPipeline:
             "last_crop": None
         }
     
-    def _load_profile_only(self, user_id: str) -> dict:
-        """Load profile without modifying working memory."""
-        profile_result = self._execute("sutra_076", {"action": "load", "user_id": user_id})
-        if profile_result.get("status") == "success":
-            return profile_result.get("outputs", {}).get("profile", {})
-        return {}
-    
     def _classify_intent(self, query: str, working_memory: dict):
         intent_result = self._execute("sutra_045", {"query": query})
         if intent_result.get("status") == "success":
             working_memory["intent"] = intent_result.get("outputs", {}).get("intent", "general")
-            working_memory["context"]["intent"] = working_memory["intent"]
         self._add_trace("intent", working_memory["intent"])
-    
-    def _fill_slots_from_query(self, query: str, working_memory: dict):
-        query_lower = query.lower()
-        
-        # State
-        if "assam" in query_lower or "axom" in query_lower:
-            working_memory["context"]["state"] = "assam"
-        
-        # District
-        districts = ["bongaigaon", "barpeta", "jorhat", "nagaon", "dibrugarh",
-                    "sonitpur", "dhubri", "goalpara", "kokrajhar", "tinsukia",
-                    "sivasagar", "golaghat", "lakhimpur", "dhemaji", "morigaon",
-                    "nalbari", "kamrup", "cachar", "hailakandi", "karimganj"]
-        for district in districts:
-            if district in query_lower:
-                working_memory["pending_slots"]["district"] = district
-                working_memory["context"]["district"] = district
-                break
-        
-        # Season (with synonyms)
-        seasons = {"kharif": "kharif", "rabi": "rabi", "summer": "summer", "winter": "winter",
-                   "monsoon": "kharif", "rainy": "kharif"}
-        for key, value in seasons.items():
-            if key in query_lower:
-                working_memory["pending_slots"]["season"] = value
-                working_memory["context"]["season"] = value
-                break
-        
-        # Soil
-        soils = ["loamy", "clay", "sandy", "alluvial"]
-        for soil in soils:
-            if soil in query_lower:
-                working_memory["pending_slots"]["soil_type"] = soil
-                break
-    
-    def _load_profile(self, user_id: str, working_memory: dict):
-        profile = self._load_profile_only(user_id)
-        working_memory["profile"] = profile
-        
-        # Fill district and soil_type from profile (but NOT season)
-        if profile.get("district") and not working_memory["pending_slots"].get("district"):
-            working_memory["pending_slots"]["district"] = profile["district"]
-            working_memory["context"]["district"] = profile["district"]
-        
-        if profile.get("soil_type") and not working_memory["pending_slots"].get("soil_type"):
-            working_memory["pending_slots"]["soil_type"] = profile["soil_type"]
     
     def _generate_questions(self, missing: list) -> list:
         questions = []
@@ -331,6 +254,10 @@ class AgenticPipeline:
                 questions.append("Which season are you planning to grow in? (kharif/rabi/summer)")
             elif slot == "soil_type":
                 questions.append("What type of soil do you have? (loamy/clay/sandy)")
+            elif slot == "crop":
+                questions.append("Which crop are you asking about?")
+            elif slot == "language":
+                questions.append("Which language?")
         return questions
     
     def _load_conversation_state(self, user_id: str):
@@ -383,7 +310,7 @@ class AgenticPipeline:
         for sutra_id in sequence:
             if sutra_id in ["sutra_068", "sutra_069", "sutra_070", "sutra_071", "sutra_072",
                            "sutra_073", "sutra_074", "sutra_075", "sutra_076", "sutra_077",
-                           "sutra_078", "sutra_079", "sutra_080"]:
+                           "sutra_078", "sutra_079", "sutra_080", "sutra_081"]:
                 continue
             
             inputs = {
@@ -429,7 +356,7 @@ class AgenticPipeline:
         slot_score = self._calculate_slot_confidence(working_memory)
         source_score = min(1.0, len(working_memory["sources"]) * 0.1)
         knowledge_score = min(1.0, len(working_memory["ranked_knowledge"]) * 0.05)
-        confidence = round((slot_score * 0.4 + source_score * 0.2 + knowledge_score * 0.2 + 0.2), 2)
+        confidence = round((slot_score * 0.4 + source_score * 0.3 + knowledge_score * 0.3), 2)
         confidence = min(1.0, confidence)
         
         # Response Validator
@@ -441,7 +368,6 @@ class AgenticPipeline:
         if validator_result.get("status") == "success":
             working_memory["approved"] = validator_result.get("outputs", {}).get("approved", False)
         
-        # Save observation memory
         self._save_observation_memory(working_memory["user_id"], working_memory)
         
         elapsed = time.time() - start_time

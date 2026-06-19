@@ -15,7 +15,6 @@ def execute(inputs: dict, context: dict = None) -> dict:
     if not query:
         return failure_response("Query required")
     
-    # Map intent to sutra sequence and required slots
     intent_map = {
         'agriculture': {
             'sequence': ['sutra_021', 'sutra_025', 'sutra_027', 'sutra_029'],
@@ -45,7 +44,7 @@ def execute(inputs: dict, context: dict = None) -> dict:
     
     default = {
         'sequence': ['sutra_041'],
-        'required_slots': ['query']
+        'required_slots': []
     }
     
     plan = intent_map.get(intent, default)

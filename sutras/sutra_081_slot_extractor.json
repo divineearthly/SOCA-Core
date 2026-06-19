@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_081",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Generic Slot Extractor",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "slots", "type": "object"},
+    {"name": "extracted_count", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.slot_extractor",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
