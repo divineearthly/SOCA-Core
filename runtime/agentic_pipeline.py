@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v18.0 - Critic + Repair Loop
+SOCA Agentic Pipeline v19.0 - Executable Repairs + Dynamic Confidence
 """
 
 import sys
@@ -169,7 +169,8 @@ class AgenticPipeline:
                 "last_confidence": 0.0,
                 "evidence": [],
                 "repair_actions": [],
-                "weaknesses": []
+                "weaknesses": [],
+                "repairs_applied": []
             }
             self._push_goal(user_id, goal)
             return self._ask_clarification(user_id, goal, start_time)
@@ -189,7 +190,8 @@ class AgenticPipeline:
             "last_confidence": 0.0,
             "evidence": [],
             "repair_actions": [],
-            "weaknesses": []
+            "weaknesses": [],
+            "repairs_applied": []
         }
         self._push_goal(user_id, goal)
         return self._execute_goal_with_reflection(user_id, start_time)
@@ -218,7 +220,7 @@ class AgenticPipeline:
             result = self._execute_full_reasoning(working_memory, start_time)
             confidence = result.get("confidence", 0.0)
             
-            # Critic evaluation (sutra_082)
+            # Critic evaluation
             critic_result = self._execute("sutra_082", {
                 "answer": result.get("answer", ""),
                 "sources": result.get("sources", []),
@@ -226,12 +228,20 @@ class AgenticPipeline:
                 "intent": working_memory.get("intent", "general")
             })
             
+            weaknesses = []
+            repair_actions = []
             if critic_result.get("status") == "success":
                 weaknesses = critic_result.get("outputs", {}).get("weaknesses", [])
                 repair_actions = critic_result.get("outputs", {}).get("repair_actions", [])
                 goal["weaknesses"] = weaknesses
                 goal["repair_actions"] = repair_actions
                 self._save_conversation_state(user_id)
+            
+            # Calculate dynamic confidence
+            base_confidence = self._calculate_dynamic_confidence(working_memory, result)
+            critic_penalty = len(weaknesses) * 0.05
+            confidence = max(0.0, min(1.0, base_confidence - critic_penalty))
+            result["confidence"] = confidence
             
             # Track best result
             if confidence > best_confidence:
@@ -242,19 +252,21 @@ class AgenticPipeline:
             goal["evidence"] = result.get("sources", [])
             
             # Check if we can stop
-            if confidence >= REFLECTION_THRESHOLD and len(goal.get("weaknesses", [])) == 0:
+            if confidence >= REFLECTION_THRESHOLD and len(weaknesses) == 0:
                 self._save_observation_memory(user_id, working_memory)
                 self._pop_goal(user_id)
                 result["iteration"] = iteration + 1
                 result["critic_used"] = True
                 return result
             
-            # Repair if not done
-            if iteration < MAX_ITERATIONS - 1 and goal.get("repair_actions"):
-                self._repair(goal, working_memory)
-                self._save_conversation_state(user_id)
+            # Execute repairs if needed
+            if iteration < MAX_ITERATIONS - 1 and repair_actions:
+                executed = self._execute_repairs(goal, working_memory, repair_actions)
+                if executed:
+                    self._save_conversation_state(user_id)
+                    continue
         
-        # Return best result after max iterations
+        # Return best result
         self._save_observation_memory(user_id, working_memory)
         self._pop_goal(user_id)
         if best_result:
@@ -264,30 +276,86 @@ class AgenticPipeline:
         
         return result
     
-    def _repair(self, goal: dict, working_memory: dict):
-        """Apply repairs based on critic feedback."""
-        repair_actions = goal.get("repair_actions", [])
+    def _execute_repairs(self, goal: dict, working_memory: dict, repair_actions: list) -> bool:
+        """Execute repair actions."""
+        executed = False
         
         for action in repair_actions:
-            if "Ask for" in action:
-                # This would trigger clarification in the next iteration
-                pass
-            elif "Retrieve more" in action:
+            # Ask for missing slot
+            if "Ask for" in action or "specified" in action:
+                # Find which slot is missing
+                missing_slots = goal.get("missing_slots", [])
+                required = goal.get("required_slots", [])
+                filled = goal.get("filled_slots", {})
+                
+                for slot in required:
+                    if not filled.get(slot) and slot not in missing_slots:
+                        missing_slots.append(slot)
+                        executed = True
+                
+                if missing_slots:
+                    goal["missing_slots"] = missing_slots
+                    goal["status"] = "waiting_for_clarification"
+                    self._save_conversation_state(goal.get("user_id"))
+                    # Return clarification immediately
+                    return True
+            
+            # Retrieve more knowledge
+            elif "Retrieve more" in action or "sources" in action:
                 working_memory["retrieve_more"] = True
+                executed = True
+            
+            # Recommend specific
             elif "Recommend specific" in action:
                 working_memory["need_specific"] = True
+                executed = True
         
-        # Store repair intent
-        goal["repairs_applied"] = repair_actions
+        # Store what was applied
+        if executed:
+            goal["repairs_applied"] = goal.get("repairs_applied", []) + repair_actions
+        
+        return executed
+    
+    def _calculate_dynamic_confidence(self, working_memory: dict, result: dict) -> float:
+        """Calculate confidence dynamically from goal requirements."""
+        # Slot confidence from required slots only
+        required_slots = working_memory.get("required_slots", [])
+        pending_slots = working_memory.get("pending_slots", {})
+        
+        if required_slots:
+            filled = sum(1 for s in required_slots if pending_slots.get(s))
+            slot_score = filled / len(required_slots)
+        else:
+            slot_score = 0.5
+        
+        # Fact checker confidence
+        fact_result = self._execute("sutra_071", {
+            "answer": result.get("answer", ""),
+            "sources": result.get("sources", []),
+            "domain": working_memory.get("intent", "general")
+        })
+        fact_conf = fact_result.get("confidence", 0.5) if fact_result.get("status") == "success" else 0.5
+        
+        # Quality scorer confidence
+        quality_result = self._execute("sutra_079", {
+            "answer": result.get("answer", ""),
+            "sources": result.get("sources", []),
+            "ranked_results": working_memory.get("ranked_knowledge", []),
+            "domain": working_memory.get("intent", "general")
+        })
+        quality_conf = quality_result.get("outputs", {}).get("quality_score", 0.5) if quality_result.get("status") == "success" else 0.5
+        
+        # Combine
+        confidence = slot_score * 0.3 + fact_conf * 0.35 + quality_conf * 0.35
+        return min(1.0, confidence)
     
     def _apply_repair_actions(self, goal: dict, working_memory: dict):
         """Apply repair actions to working memory."""
-        if goal.get("repairs_applied"):
-            for action in goal["repairs_applied"]:
-                if "Retrieve more" in action:
-                    working_memory["retrieve_more"] = True
-                if "Recommend specific" in action:
-                    working_memory["need_specific"] = True
+        for action in goal.get("repairs_applied", []):
+            if "Retrieve more" in action or "sources" in action:
+                working_memory["retrieve_more"] = True
+            if "Recommend specific" in action:
+                working_memory["need_specific"] = True
     
     def _load_profile_only(self, user_id: str) -> dict:
         profile_result = self._execute("sutra_076", {"action": "load", "user_id": user_id})
@@ -343,6 +411,7 @@ class AgenticPipeline:
             "sources": [],
             "trace": [],
             "pending_slots": {},
+            "required_slots": [],
             "iteration": 0,
             "goal_reached": False,
             "observations": [],
@@ -381,6 +450,12 @@ class AgenticPipeline:
             json.dump(self.conversation_state.get(user_id, {}), f, indent=2)
     
     def _execute_full_reasoning(self, working_memory: dict, start_time: float) -> dict:
+        # Store required slots for confidence calculation
+        required_slots = [k for k in working_memory["pending_slots"].keys()
+                         if k in ["season", "district", "soil_type", "topic", "language", "crop", "plant", "animal"]]
+        working_memory["required_slots"] = required_slots
+        
+        # Knowledge Retrieval
         knowledge_result = self._execute("sutra_074", {
             "query": working_memory["query"],
             "district": working_memory["pending_slots"].get("district", ""),
@@ -390,6 +465,7 @@ class AgenticPipeline:
             working_memory["knowledge"] = knowledge_result.get("outputs", {}).get("knowledge_results", [])
         self._add_trace("knowledge", len(working_memory["knowledge"]))
         
+        # BM25 Ranking
         ranker_result = self._execute("sutra_080", {
             "query": working_memory["query"],
             "knowledge_results": working_memory["knowledge"],
@@ -399,6 +475,7 @@ class AgenticPipeline:
             working_memory["ranked_knowledge"] = ranker_result.get("outputs", {}).get("ranked_results", [])
         self._add_trace("bm25", len(working_memory["ranked_knowledge"]))
         
+        # Query Planner
         planner_result = self._execute("sutra_069", {
             "query": working_memory["query"],
             "intent": working_memory["intent"]
@@ -453,42 +530,6 @@ class AgenticPipeline:
             working_memory["sources"] = reasoner_result.get("outputs", {}).get("sources", [])
         self._add_trace("reasoner", working_memory["synthesis"][:50])
         
-        # Evidence-based confidence
-        fact_result = self._execute("sutra_071", {
-            "answer": working_memory["synthesis"],
-            "sources": working_memory["sources"],
-            "domain": working_memory["intent"]
-        })
-        fact_conf = fact_result.get("confidence", 0.5) if fact_result.get("status") == "success" else 0.5
-        
-        quality_result = self._execute("sutra_079", {
-            "answer": working_memory["synthesis"],
-            "sources": working_memory["sources"],
-            "ranked_results": working_memory["ranked_knowledge"],
-            "domain": working_memory["intent"]
-        })
-        quality_conf = quality_result.get("outputs", {}).get("quality_score", 0.5) if quality_result.get("status") == "success" else 0.5
-        
-        # Dynamic slot confidence
-        required_slots = [s for s in working_memory["pending_slots"].keys() 
-                         if s in ["season", "district", "soil_type", "topic", "language", "crop", "plant", "animal"]]
-        if required_slots:
-            filled = sum(1 for s in required_slots if working_memory["pending_slots"].get(s))
-            slot_score = filled / len(required_slots)
-        else:
-            slot_score = 0.5
-        
-        confidence = round((slot_score * 0.3 + fact_conf * 0.35 + quality_conf * 0.35), 2)
-        confidence = min(1.0, confidence)
-        
-        validator_result = self._execute("sutra_072", {
-            "response": working_memory["synthesis"],
-            "confidence": confidence,
-            "sources": working_memory["sources"]
-        })
-        if validator_result.get("status") == "success":
-            working_memory["approved"] = validator_result.get("outputs", {}).get("approved", False)
-        
         elapsed = time.time() - start_time
         
         return {
@@ -496,8 +537,8 @@ class AgenticPipeline:
             "query": working_memory["query"],
             "intent": working_memory["intent"],
             "answer": working_memory["synthesis"],
-            "confidence": confidence,
-            "approved": working_memory["approved"],
+            "confidence": 0.5,  # Will be recalculated
+            "approved": False,
             "sources": working_memory["sources"],
             "profile": working_memory["profile"],
             "context": working_memory["context"],
