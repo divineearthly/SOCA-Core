@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_088",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Nutrition Advisor",
+  "type": "health",
+  "category": "domain",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "age", "type": "integer", "required": false},
+    {"name": "activity", "type": "string", "required": false},
+    {"name": "goal", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "estimated_calories", "type": "number"},
+    {"name": "protein_advice", "type": "string"},
+    {"name": "water", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.health.nutrition_advisor",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

@@ -1,0 +1,37 @@
+{
+  "crops": [
+    {
+      "name": "Rice (Sali)",
+      "season": "Kharif (July-December)",
+      "soil": "Loamy, clay",
+      "water_requirement": "High",
+      "duration": "120-150 days",
+      "varieties": ["Boro", "Sali", "Ahu"],
+      "yield": "2.5-3.5 tons/hectare",
+      "pests": ["Stem borer", "Leafhopper", "Gall midge"],
+      "diseases": ["Blast", "Sheath blight", "Brown spot"]
+    },
+    {
+      "name": "Tea",
+      "season": "Perennial (March-December)",
+      "soil": "Acidic (pH 4.5-5.5)",
+      "water_requirement": "Moderate",
+      "duration": "Perennial",
+      "varieties": ["CTC", "Orthodox"],
+      "yield": "1.5-2.0 tons/hectare",
+      "pests": ["Tea mosquito bug", "Red spider mite"],
+      "diseases": ["Blister blight", "Brown blight"]
+    },
+    {
+      "name": "Jute",
+      "season": "Kharif (May-August)",
+      "soil": "Alluvial, loamy",
+      "water_requirement": "High",
+      "duration": "120 days",
+      "varieties": ["White Jute", "Tossa"],
+      "yield": "2.0-2.5 tons/hectare",
+      "pests": ["Jute stem weevil", "Semi-looper"],
+      "diseases": ["Stem rot", "Leaf spot"]
+    }
+  ]
+}

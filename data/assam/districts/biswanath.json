@@ -1,0 +1,8 @@
+{
+  "district": "biswanath",
+  "state": "Assam",
+  "soil_type": "Alluvial",
+  "rainfall": "High",
+  "major_crops": ["Rice", "Mustard", "Jute"],
+  "livestock": ["Cattle", "Goat"]
+}
