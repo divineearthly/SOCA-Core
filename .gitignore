@@ -1,9 +1,25 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Database
 *.db
-*.log
 *.sqlite
 *.sqlite3
-.DS_Store
+
+# Logs
+*.log
 *.tmp
-*.temp
+
+# Large files
+*.zip
+*.tar.gz
+*.gguf
+models/
+llama-b9728/
+
+# IDE
+.DS_Store
+*.swp
+*~
