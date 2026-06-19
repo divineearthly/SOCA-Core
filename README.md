@@ -77,7 +77,7 @@ Claim Status
 Executable knowledge kernels ✅ Proven
 DAG-based execution ✅ Proven
 Complete execution traces ✅ Proven
-Dependency scheduling ✅ Proven
+Dependency scheduling ⚠️ Functional, benchmark refinement ongoing
 Verification-driven generation 🔨 In progress
 Continual learning 🔨 Planned
 Hybrid SOCA + LLM 🔨 Planned
@@ -122,3 +122,25 @@ SOCA is an open research project. Contributions welcome!
 ---
 
 Built with ❤️ on a Redmi 14C 5G in Termux
+
+## Current Status (June 2026)
+
+### Proven
+- ✅ Executable Sutras
+- ✅ SQLite-backed registry
+- ✅ DAG execution
+- ✅ Trace generation
+- ✅ Verification engine
+- ✅ Android deployment
+- ✅ Offline operation
+- ✅ Code generation (factorial, fibonacci, palindrome, prime)
+
+### Partially Proven
+- ⚠️ Verification-driven generation
+- ⚠️ Kosha memory
+- ⚠️ Hybrid architecture
+
+### In Progress
+- 🔨 Scheduling benchmark refinement
+- 🔨 Usage tracking
+- 🔨 Duplicate registration fix
