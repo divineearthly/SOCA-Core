@@ -1,0 +1,42 @@
+[
+  {
+    "size": 10,
+    "nodes": 10,
+    "edges": 17,
+    "time_ms": 1.079559326171875,
+    "status": "success",
+    "nodes_sorted": 10
+  },
+  {
+    "size": 50,
+    "nodes": 50,
+    "edges": 368,
+    "time_ms": 0.2760887145996094,
+    "status": "success",
+    "nodes_sorted": 50
+  },
+  {
+    "size": 100,
+    "nodes": 100,
+    "edges": 1477,
+    "time_ms": 0.7004737854003906,
+    "status": "success",
+    "nodes_sorted": 100
+  },
+  {
+    "size": 500,
+    "nodes": 500,
+    "edges": 37481,
+    "time_ms": 12.045145034790039,
+    "status": "success",
+    "nodes_sorted": 500
+  },
+  {
+    "size": 1000,
+    "nodes": 1000,
+    "edges": 149559,
+    "time_ms": 46.39148712158203,
+    "status": "success",
+    "nodes_sorted": 1000
+  }
+]
