@@ -1,0 +1,29 @@
+{
+  "state": "Assam",
+  "pests": [
+    {
+      "name": "Stem borer",
+      "crops": ["Rice"],
+      "symptoms": "Dead hearts, white heads",
+      "organic_treatment": "Neem oil spray, biological control",
+      "chemical_treatment": "Need-based insecticide",
+      "prevention": "Crop rotation, resistant varieties"
+    },
+    {
+      "name": "Leafhopper",
+      "crops": ["Rice"],
+      "symptoms": "Yellowing leaves",
+      "organic_treatment": "Neem oil spray",
+      "chemical_treatment": "Foliar sprays",
+      "prevention": "Maintain field hygiene"
+    },
+    {
+      "name": "Tea mosquito bug",
+      "crops": ["Tea"],
+      "symptoms": "Leaf damage, stunted growth",
+      "organic_treatment": "Neem-based sprays",
+      "chemical_treatment": "Need-based application",
+      "prevention": "Shade regulation"
+    }
+  ]
+}

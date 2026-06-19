@@ -1,0 +1,38 @@
+{
+  "crop": "Rice",
+  "state": "Assam",
+  "varieties": [
+    {
+      "name": "Sali",
+      "season": "July-December",
+      "duration": "140-150 days",
+      "yield": "2.5-3.5 tons/hectare",
+      "water_requirement": "High",
+      "soil": "Loamy, clay"
+    },
+    {
+      "name": "Boro",
+      "season": "January-June",
+      "duration": "160-170 days",
+      "yield": "3.5-4.5 tons/hectare",
+      "water_requirement": "Very High",
+      "soil": "Loamy"
+    },
+    {
+      "name": "Ahu",
+      "season": "March-August",
+      "duration": "100-110 days",
+      "yield": "2.0-2.5 tons/hectare",
+      "water_requirement": "Moderate",
+      "soil": "Loamy"
+    }
+  ],
+  "traditional_practices": [
+    "Transplanting method",
+    "Jhum cultivation in hilly areas",
+    "Sali system in plains"
+  ],
+  "pests": ["Stem borer", "Leafhopper", "Gall midge"],
+  "diseases": ["Blast", "Sheath blight", "Brown spot"],
+  "storage": "6-12 months in traditional bins"
+}

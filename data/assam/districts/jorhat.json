@@ -1,0 +1,11 @@
+{
+  "district": "Jorhat",
+  "state": "Assam",
+  "soil_type": "Alluvial, acidic",
+  "rainfall": "High (monsoon 1800-2500 mm)",
+  "major_crops": ["Rice", "Tea", "Sugarcane"],
+  "agriculture_area": "80,000 hectares",
+  "irrigation": "River Brahmaputra, rain-fed",
+  "flood_risk": "Low",
+  "livestock": ["Cattle", "Goat"]
+}

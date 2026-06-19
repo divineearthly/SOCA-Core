@@ -1,0 +1,11 @@
+{
+  "district": "Bongaigaon",
+  "state": "Assam",
+  "soil_type": "Loamy, alluvial",
+  "rainfall": "High (monsoon 2000-3000 mm)",
+  "major_crops": ["Rice", "Jute", "Mustard"],
+  "agriculture_area": "75,000 hectares",
+  "irrigation": "River Brahmaputra, tube wells",
+  "flood_risk": "Medium",
+  "livestock": ["Cattle", "Goat", "Poultry"]
+}

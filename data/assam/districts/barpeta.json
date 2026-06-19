@@ -1,0 +1,11 @@
+{
+  "district": "Barpeta",
+  "state": "Assam",
+  "soil_type": "Alluvial, clay loam",
+  "rainfall": "Very High (monsoon 2500-3500 mm)",
+  "major_crops": ["Rice", "Jute", "Sugarcane", "Vegetables"],
+  "agriculture_area": "120,000 hectares",
+  "irrigation": "River Brahmaputra, canals",
+  "flood_risk": "High",
+  "livestock": ["Cattle", "Goat", "Buffalo"]
+}
