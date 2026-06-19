@@ -1,7 +1,7 @@
 """
 Sutra 011: Generate Python Code
 Pramana: Anumana (Inference)
-Generates Python code from a specification and verifies it
+Now with LLM-based generation via sutra_012
 """
 
 import ast
@@ -9,18 +9,21 @@ import sys
 import io
 import contextlib
 import traceback
+import os
+
+# Import the LLM sutra (sutra_012) dynamically
+def get_llm_sutra():
+    try:
+        import importlib
+        module = importlib.import_module('sutras.llm.llm_generate')
+        return module.execute
+    except Exception as e:
+        return None
 
 def execute(inputs: dict, context: dict = None) -> dict:
     """
     Generate and verify Python code.
-    
-    Args:
-        inputs: dict with:
-            - specification: str describing what to generate
-            - test_cases: list of dict with 'inputs' and 'expected'
-    
-    Returns:
-        dict with 'status', 'outputs', 'trace'
+    Uses LLM for generation, then verifies with test cases.
     """
     specification = inputs.get('specification', '')
     test_cases = inputs.get('test_cases', [])
@@ -36,8 +39,13 @@ def execute(inputs: dict, context: dict = None) -> dict:
             }
         }
     
-    # Parse specification to generate code
+    # First, try template matching (fast path)
     code = generate_code_from_spec(specification)
+    
+    # If no template match, try LLM generation
+    if not code:
+        print(f"  🔍 No template match, trying LLM generation...")
+        code = generate_via_llm(specification)
     
     if not code:
         return {
@@ -88,10 +96,40 @@ def execute(inputs: dict, context: dict = None) -> dict:
             }
         }
 
+def generate_via_llm(specification: str) -> str:
+    """
+    Call sutra_012 (LLM) to generate code.
+    """
+    llm_func = get_llm_sutra()
+    if not llm_func:
+        print("  ⚠️ LLM sutra not available")
+        return None
+    
+    prompt = f"Write a Python function for: {specification}\nReturn only the function, no explanation."
+    
+    result = llm_func({
+        "prompt": prompt,
+        "max_tokens": 150,
+        "temperature": 0.2
+    })
+    
+    if result.get('status') == 'success':
+        raw = result['outputs'].get('generated_text', '')
+        # Extract code block if wrapped in ```
+        if '```' in raw:
+            parts = raw.split('```')
+            if len(parts) > 1:
+                raw = parts[1]
+                if raw.startswith('python'):
+                    raw = raw[6:]
+        return raw.strip()
+    
+    print(f"  ❌ LLM generation failed: {result.get('trace', {}).get('error', 'Unknown')}")
+    return None
+
 def generate_code_from_spec(specification: str) -> str:
     """
-    Generate Python code from a specification.
-    Supports: factorial, fibonacci, palindrome, sum, prime, and more.
+    Generate Python code from a specification using templates.
     """
     spec_lower = specification.lower()
     
@@ -178,9 +216,7 @@ def generate_code_from_spec(specification: str) -> str:
     return min(numbers)
 '''
     
-    # Default: generic function
-    else:
-        return None
+    return None
 
 def verify_code(code: str, test_cases: list) -> dict:
     """
@@ -189,10 +225,8 @@ def verify_code(code: str, test_cases: list) -> dict:
     results = []
     errors = []
     
-    # Create a temporary namespace
     namespace = {}
     
-    # Compile and execute the code
     try:
         exec(code, namespace)
     except Exception as e:
@@ -202,7 +236,6 @@ def verify_code(code: str, test_cases: list) -> dict:
             "errors": [f"Compilation error: {str(e)}"]
         }
     
-    # Find the function in the namespace
     functions = [name for name, obj in namespace.items() 
                 if callable(obj) and not name.startswith('_')]
     
@@ -213,17 +246,14 @@ def verify_code(code: str, test_cases: list) -> dict:
             "errors": ["No function defined in the generated code"]
         }
     
-    # Use the first function found
     func_name = functions[0]
     func = namespace[func_name]
     
-    # Run each test case
     for i, test_case in enumerate(test_cases):
         test_input = test_case.get('inputs', [])
         expected = test_case.get('expected')
         
         try:
-            # Execute function with test inputs
             if isinstance(test_input, (list, tuple)):
                 result = func(*test_input)
             else:
