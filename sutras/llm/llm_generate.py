@@ -1,16 +1,15 @@
 """
-Sutra 012: LLM Creative Generation
-Uses llama-b9728 binary (working!)
+Sutra 012: LLM Creative Generation (Optimized)
+Uses llama-b9728 with speed optimizations
 Pramana: Shabda (Testimony)
 """
 
 import subprocess
 import os
-import time
 
 def execute(inputs: dict, context: dict = None) -> dict:
     prompt = inputs.get('prompt', '')
-    max_tokens = inputs.get('max_tokens', 50)
+    max_tokens = inputs.get('max_tokens', 30)  # Reduced for speed
     temperature = inputs.get('temperature', 0.7)
     
     if not prompt:
@@ -31,7 +30,11 @@ def execute(inputs: dict, context: dict = None) -> dict:
         lib_path = os.path.expanduser("~/soca/llama-b9728")
         env['LD_LIBRARY_PATH'] = lib_path + ":" + env.get('LD_LIBRARY_PATH', '')
         
-        # Use the correct non-interactive command format
+        # SPEED OPTIMIZATIONS:
+        # - Use 4 threads (Redmi 14C has 8 cores)
+        # - Batch size 512 for better throughput
+        # - No GPU (mobile)
+        # - Reduced context window
         cmd = [
             binary,
             "-m", model_path,
@@ -39,12 +42,16 @@ def execute(inputs: dict, context: dict = None) -> dict:
             "-n", str(max_tokens),
             "--temp", str(temperature),
             "-ngl", "0",
-            "--no-display-prompt"
+            "-t", "4",           # 4 threads
+            "-c", "512",         # Reduced context window
+            "-b", "512",         # Batch size
+            "--no-display-prompt",
+            "--simple-io"        # Simple I/O mode
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30, env=env)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=15, env=env)
         
-        # Get the output - the model response is in stdout
+        # Get the output
         output = result.stdout.strip()
         
         # Remove the prompt if it was echoed
@@ -100,10 +107,12 @@ def fallback_response(prompt, reason=""):
     }
 
 def find_model():
-    """Find a GGUF model file."""
+    """Find a GGUF model file - prefer smaller/faster models."""
+    # Priority: smaller models first for speed
     paths = [
-        "~/soca/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
-        "~/soca/models/phi-2.Q4_K_M.gguf"
+        "~/soca/models/tinyllama-q2_K.gguf",           # Smallest, fastest
+        "~/soca/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",  # Original
+        "~/soca/models/phi-2.Q4_K_M.gguf"               # Phi-2
     ]
     for path in paths:
         expanded = os.path.expanduser(path)
