@@ -299,7 +299,7 @@ class AgenticPipeline:
             diversity_score = self._calculate_diversity_score(result.get("sources", []))
 
             base_confidence = self._calculate_dynamic_confidence(working_memory, result)
-            confidence = base_confidence * (0.5 + 0.3 * critic_score + 0.2 * diversity_score)
+            confidence = base_confidence * 0.6 + critic_score * 0.3 + diversity_score * 0.1
             confidence = min(1.0, confidence)
             result["confidence"] = confidence
 
