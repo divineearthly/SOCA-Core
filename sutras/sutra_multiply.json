@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_003",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Integer Multiplication",
+  "type": "arithmetic",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "a", "type": "integer", "required": true},
+    {"name": "b", "type": "integer", "required": true}
+  ],
+  "outputs": [
+    {"name": "product", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.arithmetic.multiply",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {"input": {"a": 3, "b": 4}, "expected": {"product": 12}},
+      {"input": {"a": -2, "b": 3}, "expected": {"product": -6}}
+    ]
+  }
+}

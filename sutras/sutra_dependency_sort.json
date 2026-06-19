@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_008",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Dependency Sort",
+  "type": "planning",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "graph", "type": "object", "required": true}
+  ],
+  "outputs": [
+    {"name": "sorted_nodes", "type": "array"},
+    {"name": "has_cycle", "type": "boolean"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.planning.dependency_sort",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {
+          "graph": {
+            "nodes": ["A", "B", "C"],
+            "edges": [["A", "B"], ["B", "C"]]
+          }
+        },
+        "expected": {"sorted_nodes": ["A", "B", "C"]}
+      }
+    ]
+  }
+}

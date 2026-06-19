@@ -1,0 +1,36 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_009",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Schedule Task",
+  "type": "planning",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "graph", "type": "object", "required": true},
+    {"name": "sorted_nodes", "type": "array", "required": true}
+  ],
+  "outputs": [
+    {"name": "schedule", "type": "array"}
+  ],
+  "prerequisites": ["sutra_008"],
+  "operation": {
+    "module": "sutras.planning.schedule_task",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {
+          "graph": {
+            "nodes": ["A", "B", "C"],
+            "edges": [["A", "B"], ["B", "C"]]
+          },
+          "sorted_nodes": ["A", "B", "C"]
+        },
+        "expected": {"schedule": [["A"], ["B"], ["C"]]}
+      }
+    ]
+  }
+}

@@ -47,17 +47,12 @@ class SOCARuntime:
         # Add the target node
         self.graph.add_node(target_sutra_id, definition=sutra_def)
         
-        # Recursively add prerequisites
-        # For now, prerequisites are stored in a separate table or inferred
-        # We'll use a simple approach - check if the sutra expects specific inputs
+        # For MVP, we'll use a simple approach - check if the sutra expects specific inputs
         # that could be provided by other sutras
-        # For this MVP, we'll assume no prerequisites or handle them manually
-        
-        # Add edges for dependencies based on input/output matching
         # This is a simplified version - in production, you'd have explicit prerequisites
         
         # Get all sutras in registry
-        with self.registry._ensure_db.__self__? # We'll keep it simple for now
+        # For now, we'll keep it simple and not recursively build
         pass
     
     def build_graph_from_list(self, sutra_ids: List[str]):
@@ -67,7 +62,6 @@ class SOCARuntime:
             if sutra_def:
                 self.graph.add_node(sutra_id, definition=sutra_def)
         
-        # No edges for now - linear execution
         # Add edges in sequence
         for i in range(len(sutra_ids) - 1):
             self.graph.add_edge(sutra_ids[i], sutra_ids[i+1])
@@ -176,7 +170,6 @@ class SOCARuntime:
     
     def register_sutras_from_directory(self, sutra_dir: str = "sutras"):
         """Register all Sutras from JSON files in a directory."""
-        import json
         import glob
         
         if not os.path.exists(sutra_dir):
