@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_026",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Pest Detection",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "crop", "type": "string", "required": true},
+    {"name": "symptoms", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "pest", "type": "string"},
+    {"name": "treatment", "type": "string"},
+    {"name": "prevention", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.pest_detection",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"crop": "rice", "symptoms": "yellowing leaves"},
+        "expected": {"pest": "Leafhopper"}
+      }
+    ]
+  }
+}

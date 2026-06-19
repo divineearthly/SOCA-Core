@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_025",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Weather Advisor",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "location", "type": "string", "required": true},
+    {"name": "season", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "rainfall", "type": "string"},
+    {"name": "advice", "type": "string"},
+    {"name": "risks", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.weather_advisor",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"location": "Assam", "season": "kharif"},
+        "expected": {"rainfall": "High (monsoon)"}
+      }
+    ]
+  }
+}
