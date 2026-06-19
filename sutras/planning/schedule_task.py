@@ -1,18 +1,10 @@
 """
-Sutra 009: Schedule Task
+Sutra 009: Schedule Task (Optimized)
 Pramana: Anumana (Inference)
+Precomputes dependencies for O(V+E) performance
 """
 
 def execute(inputs: dict, context: dict = None) -> dict:
-    """
-    Schedule a task based on sorted dependencies.
-    
-    Args:
-        inputs: dict with 'graph' and 'sorted_nodes' keys
-    
-    Returns:
-        dict with 'status', 'outputs', 'trace'
-    """
     sorted_nodes = inputs.get('sorted_nodes', [])
     graph_data = inputs.get('graph', {})
     
@@ -27,22 +19,35 @@ def execute(inputs: dict, context: dict = None) -> dict:
             }
         }
     
-    # Create schedule levels (parallel execution)
+    edges = graph_data.get('edges', [])
+    
+    # OPTIMIZATION: Build adjacency and indegree once
+    # Instead of scanning edges for each node
+    adjacency = {}
+    indegree = {}
+    
+    for node in sorted_nodes:
+        adjacency[node] = []
+        indegree[node] = 0
+    
+    for src, dst in edges:
+        if src in adjacency and dst in adjacency:
+            adjacency[src].append(dst)
+            indegree[dst] = indegree.get(dst, 0) + 1
+    
+    # Now create schedule levels (parallel execution)
     schedule = []
     remaining = set(sorted_nodes)
     executed = set()
     
     while remaining:
-        # Find nodes whose dependencies are all satisfied
+        # Find nodes whose dependencies are satisfied
         ready = []
         for node in remaining:
-            deps = [edge[0] for edge in graph_data.get('edges', []) 
-                    if len(edge) >= 2 and edge[1] == node]
-            if all(dep in executed for dep in deps):
+            if indegree.get(node, 0) == 0:
                 ready.append(node)
         
         if not ready:
-            # Should not happen with valid topological sort
             return {
                 "status": "failure",
                 "outputs": {},
@@ -54,9 +59,15 @@ def execute(inputs: dict, context: dict = None) -> dict:
             }
         
         schedule.append(ready)
+        
+        # Update indegree for nodes that depend on ready nodes
         for node in ready:
             remaining.remove(node)
             executed.add(node)
+            # Decrease indegree of downstream nodes
+            for dep in adjacency.get(node, []):
+                if dep in remaining:
+                    indegree[dep] = indegree.get(dep, 0) - 1
     
     return {
         "status": "success",
