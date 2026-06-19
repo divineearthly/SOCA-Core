@@ -1,6 +1,5 @@
 """
-Registry Manager for SOCA
-Manages Sutra registration, retrieval, and usage tracking
+Registry Manager for SOCA with Pramana Confidence
 """
 
 import sqlite3
@@ -15,13 +14,11 @@ class RegistryManager:
     
     def _ensure_db(self):
         """Create database and tables if they don't exist."""
-        # Ensure registry directory exists
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             
-            # Sutra Registry Table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS sutra_registry (
                     sutra_id TEXT PRIMARY KEY,
@@ -29,6 +26,8 @@ class RegistryManager:
                     name TEXT NOT NULL,
                     category TEXT NOT NULL,
                     pramana TEXT NOT NULL,
+                    pramana_confidence REAL DEFAULT 1.0,
+                    confidence REAL DEFAULT 1.0,
                     module_path TEXT NOT NULL,
                     entry_point TEXT NOT NULL,
                     usage_count INTEGER DEFAULT 0,
@@ -40,7 +39,6 @@ class RegistryManager:
                 )
             """)
             
-            # Verification Results Table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS verification_results (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +52,6 @@ class RegistryManager:
                 )
             """)
             
-            # Trace Log Table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS trace_log (
                     trace_id TEXT PRIMARY KEY,
@@ -69,24 +66,40 @@ class RegistryManager:
     
     def register_sutra(self, sutra_json: dict):
         """Register a Sutra from its JSON definition."""
+        pramana = sutra_json.get('pramana', 'anumana')
+        pramana_confidence = self._get_pramana_confidence(pramana)
+        
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT OR REPLACE INTO sutra_registry (
                     sutra_id, sutra_version, name, category, pramana,
+                    pramana_confidence, confidence,
                     module_path, entry_point, is_active
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 sutra_json.get('sutra_id'),
                 sutra_json.get('sutra_version', '1.0.0'),
                 sutra_json.get('name'),
                 sutra_json.get('category', 'core'),
-                sutra_json.get('pramana', 'anumana'),
+                pramana,
+                pramana_confidence,
+                pramana_confidence,  # initial confidence = pramana_confidence
                 sutra_json.get('operation', {}).get('module'),
                 sutra_json.get('operation', {}).get('entry_point', 'execute'),
                 True
             ))
             conn.commit()
+    
+    def _get_pramana_confidence(self, pramana: str) -> float:
+        """Get confidence weight for a Pramana type."""
+        weights = {
+            'pratyaksha': 1.0,   # Direct perception - highest
+            'anumana': 0.9,      # Inference - very reliable
+            'upamana': 0.8,      # Analogy/comparison
+            'shabda': 0.6        # Testimony - lowest (LLM output)
+        }
+        return weights.get(pramana, 0.9)
     
     def get_sutra(self, sutra_id: str) -> dict:
         """Retrieve a Sutra definition from the registry."""
@@ -94,6 +107,7 @@ class RegistryManager:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT sutra_id, sutra_version, name, category, pramana,
+                       pramana_confidence, confidence,
                        module_path, entry_point
                 FROM sutra_registry
                 WHERE sutra_id = ? AND is_active = TRUE
@@ -106,8 +120,10 @@ class RegistryManager:
                     'name': row[2],
                     'category': row[3],
                     'pramana': row[4],
-                    'module_path': row[5],
-                    'entry_point': row[6]
+                    'pramana_confidence': row[5],
+                    'confidence': row[6],
+                    'module_path': row[7],
+                    'entry_point': row[8]
                 }
             return None
     
@@ -120,6 +136,7 @@ class RegistryManager:
                     UPDATE sutra_registry
                     SET usage_count = usage_count + 1,
                         success_count = success_count + 1,
+                        confidence = MIN(1.0, confidence + 0.01),
                         last_used = CURRENT_TIMESTAMP
                     WHERE sutra_id = ?
                 """, (sutra_id,))
@@ -128,6 +145,7 @@ class RegistryManager:
                     UPDATE sutra_registry
                     SET usage_count = usage_count + 1,
                         failure_count = failure_count + 1,
+                        confidence = MAX(0.1, confidence - 0.05),
                         last_used = CURRENT_TIMESTAMP
                     WHERE sutra_id = ?
                 """, (sutra_id,))
