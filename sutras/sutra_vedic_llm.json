@@ -1,0 +1,33 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_019",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Vedic Language Generator",
+  "type": "vedic_llm",
+  "category": "generative",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "prompt", "type": "string", "required": true},
+    {"name": "max_tokens", "type": "integer", "required": false},
+    {"name": "temperature", "type": "number", "required": false}
+  ],
+  "outputs": [
+    {"name": "generated_text", "type": "string"},
+    {"name": "parsed", "type": "object"},
+    {"name": "inferred", "type": "object"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.vedic_llm.vedic_generator",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"prompt": "What is 2+2?"},
+        "expected": {"generated_text": "2 + 2 = 4"}
+      }
+    ]
+  }
+}
