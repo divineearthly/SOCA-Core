@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v17.0 - True Reflection with Actionable Replanning
+SOCA Agentic Pipeline v18.0 - Critic + Repair Loop
 """
 
 import sys
@@ -11,7 +11,7 @@ from collections import Counter
 sys.path.append('runtime')
 from soca_runtime import SOCARuntime
 
-GOAL_TTL = 86400  # 24 hours
+GOAL_TTL = 86400
 REFLECTION_THRESHOLD = 0.6
 MAX_ITERATIONS = 3
 
@@ -168,7 +168,8 @@ class AgenticPipeline:
                 "iteration": 0,
                 "last_confidence": 0.0,
                 "evidence": [],
-                "replan_actions": []
+                "repair_actions": [],
+                "weaknesses": []
             }
             self._push_goal(user_id, goal)
             return self._ask_clarification(user_id, goal, start_time)
@@ -187,7 +188,8 @@ class AgenticPipeline:
             "iteration": 0,
             "last_confidence": 0.0,
             "evidence": [],
-            "replan_actions": []
+            "repair_actions": [],
+            "weaknesses": []
         }
         self._push_goal(user_id, goal)
         return self._execute_goal_with_reflection(user_id, start_time)
@@ -203,19 +205,33 @@ class AgenticPipeline:
         for iteration in range(MAX_ITERATIONS):
             goal["iteration"] = iteration + 1
             
-            # Build working memory with current state
             working_memory = self._init_working_memory(goal.get("original_query"), user_id)
             working_memory["intent"] = goal.get("intent")
             working_memory["pending_slots"] = goal.get("filled_slots", {}).copy()
             working_memory["profile"] = self._load_profile_only(user_id)
             self._load_observation_memory(user_id, working_memory)
             
-            # Apply any replan actions
-            self._apply_replan_actions(goal, working_memory)
+            # Apply repair actions
+            self._apply_repair_actions(goal, working_memory)
             
             # Execute reasoning
             result = self._execute_full_reasoning(working_memory, start_time)
             confidence = result.get("confidence", 0.0)
+            
+            # Critic evaluation (sutra_082)
+            critic_result = self._execute("sutra_082", {
+                "answer": result.get("answer", ""),
+                "sources": result.get("sources", []),
+                "slots": working_memory.get("pending_slots", {}),
+                "intent": working_memory.get("intent", "general")
+            })
+            
+            if critic_result.get("status") == "success":
+                weaknesses = critic_result.get("outputs", {}).get("weaknesses", [])
+                repair_actions = critic_result.get("outputs", {}).get("repair_actions", [])
+                goal["weaknesses"] = weaknesses
+                goal["repair_actions"] = repair_actions
+                self._save_conversation_state(user_id)
             
             # Track best result
             if confidence > best_confidence:
@@ -226,81 +242,52 @@ class AgenticPipeline:
             goal["evidence"] = result.get("sources", [])
             
             # Check if we can stop
-            if confidence >= REFLECTION_THRESHOLD:
+            if confidence >= REFLECTION_THRESHOLD and len(goal.get("weaknesses", [])) == 0:
                 self._save_observation_memory(user_id, working_memory)
                 self._pop_goal(user_id)
                 result["iteration"] = iteration + 1
-                result["reflection_used"] = True
+                result["critic_used"] = True
                 return result
             
-            # Replan if not done
-            if iteration < MAX_ITERATIONS - 1:
-                replan_action = self._analyze_and_replan(goal, result)
-                if replan_action:
-                    goal["replan_actions"].append({
-                        "iteration": iteration + 1,
-                        "action": replan_action
-                    })
-                    self._save_conversation_state(user_id)
-                    
-                    # If replan asks for clarification, return it
-                    if replan_action.get("type") == "ask_clarification":
-                        return self._ask_clarification(user_id, goal, start_time)
+            # Repair if not done
+            if iteration < MAX_ITERATIONS - 1 and goal.get("repair_actions"):
+                self._repair(goal, working_memory)
+                self._save_conversation_state(user_id)
         
         # Return best result after max iterations
         self._save_observation_memory(user_id, working_memory)
         self._pop_goal(user_id)
         if best_result:
             best_result["iteration"] = goal.get("iteration", MAX_ITERATIONS)
-            best_result["reflection_used"] = True
+            best_result["critic_used"] = True
             return best_result
         
         return result
     
-    def _analyze_and_replan(self, goal: dict, result: dict) -> dict:
-        """Analyze the result and determine a replan action."""
-        confidence = result.get("confidence", 0.0)
-        missing_required = [s for s in goal.get("required_slots", []) if not goal["filled_slots"].get(s)]
-        missing_optional = [s for s in goal.get("optional_slots", []) if not goal["filled_slots"].get(s)]
+    def _repair(self, goal: dict, working_memory: dict):
+        """Apply repairs based on critic feedback."""
+        repair_actions = goal.get("repair_actions", [])
         
-        # Action 1: Very low confidence - ask for any missing info
-        if confidence < 0.3 and missing_required:
-            return {
-                "type": "ask_clarification",
-                "slots": missing_required,
-                "reason": "Very low confidence, need more information"
-            }
-        
-        # Action 2: Low confidence - try to fill optional slots
-        if confidence < 0.5 and missing_optional:
-            return {
-                "type": "ask_clarification",
-                "slots": missing_optional[:2],
-                "reason": "Optional information could improve confidence"
-            }
-        
-        # Action 3: Medium-low confidence - try different retrieval
-        if confidence < 0.6:
-            return {
-                "type": "retrieve_more",
-                "reason": "More knowledge retrieval could improve confidence"
-            }
-        
-        # Action 4: General improvement
-        if confidence < 0.7:
-            return {
-                "type": "run_extra_sutra",
-                "sutra": "sutra_056",  # Crop Rotation Advisor for agriculture
-                "reason": "Additional domain sutra could improve answer"
-            }
-        
-        return None
-    
-    def _apply_replan_actions(self, goal: dict, working_memory: dict):
-        """Apply replan actions to working memory."""
-        for action in goal.get("replan_actions", []):
-            if action.get("type") == "retrieve_more":
+        for action in repair_actions:
+            if "Ask for" in action:
+                # This would trigger clarification in the next iteration
+                pass
+            elif "Retrieve more" in action:
                 working_memory["retrieve_more"] = True
+            elif "Recommend specific" in action:
+                working_memory["need_specific"] = True
+        
+        # Store repair intent
+        goal["repairs_applied"] = repair_actions
+    
+    def _apply_repair_actions(self, goal: dict, working_memory: dict):
+        """Apply repair actions to working memory."""
+        if goal.get("repairs_applied"):
+            for action in goal["repairs_applied"]:
+                if "Retrieve more" in action:
+                    working_memory["retrieve_more"] = True
+                if "Recommend specific" in action:
+                    working_memory["need_specific"] = True
     
     def _load_profile_only(self, user_id: str) -> dict:
         profile_result = self._execute("sutra_076", {"action": "load", "user_id": user_id})
@@ -361,7 +348,8 @@ class AgenticPipeline:
             "observations": [],
             "actions": [],
             "last_crop": None,
-            "retrieve_more": False
+            "retrieve_more": False,
+            "need_specific": False
         }
     
     def _classify_intent(self, query: str, working_memory: dict):
@@ -393,7 +381,6 @@ class AgenticPipeline:
             json.dump(self.conversation_state.get(user_id, {}), f, indent=2)
     
     def _execute_full_reasoning(self, working_memory: dict, start_time: float) -> dict:
-        # Knowledge Retrieval
         knowledge_result = self._execute("sutra_074", {
             "query": working_memory["query"],
             "district": working_memory["pending_slots"].get("district", ""),
@@ -403,7 +390,6 @@ class AgenticPipeline:
             working_memory["knowledge"] = knowledge_result.get("outputs", {}).get("knowledge_results", [])
         self._add_trace("knowledge", len(working_memory["knowledge"]))
         
-        # BM25 Ranking
         ranker_result = self._execute("sutra_080", {
             "query": working_memory["query"],
             "knowledge_results": working_memory["knowledge"],
@@ -413,23 +399,20 @@ class AgenticPipeline:
             working_memory["ranked_knowledge"] = ranker_result.get("outputs", {}).get("ranked_results", [])
         self._add_trace("bm25", len(working_memory["ranked_knowledge"]))
         
-        # Query Planner
         planner_result = self._execute("sutra_069", {
             "query": working_memory["query"],
             "intent": working_memory["intent"]
         })
         sequence = planner_result.get("outputs", {}).get("sequence", ["sutra_041"])
         
-        # Add extra sutra if requested
         if working_memory.get("retrieve_more"):
-            sequence = sequence + ["sutra_056"]  # Crop Rotation Advisor
+            sequence = sequence + ["sutra_056"]
         
-        # Domain Sutras
         results = {}
         for sutra_id in sequence:
             if sutra_id in ["sutra_068", "sutra_069", "sutra_070", "sutra_071", "sutra_072",
                            "sutra_073", "sutra_074", "sutra_075", "sutra_076", "sutra_077",
-                           "sutra_078", "sutra_079", "sutra_080", "sutra_081"]:
+                           "sutra_078", "sutra_079", "sutra_080", "sutra_081", "sutra_082"]:
                 continue
             
             inputs = {
@@ -459,7 +442,6 @@ class AgenticPipeline:
         
         self._add_trace("domain", len(results))
         
-        # Multi-Hop Reasoner
         reasoner_result = self._execute("sutra_070", {
             "results": results,
             "query": working_memory["query"],
@@ -487,8 +469,9 @@ class AgenticPipeline:
         })
         quality_conf = quality_result.get("outputs", {}).get("quality_score", 0.5) if quality_result.get("status") == "success" else 0.5
         
-        # Slot confidence - only required slots
-        required_slots = [k for k in working_memory["pending_slots"].keys() if k in ["season", "district", "soil_type", "topic", "language", "crop", "plant", "animal"]]
+        # Dynamic slot confidence
+        required_slots = [s for s in working_memory["pending_slots"].keys() 
+                         if s in ["season", "district", "soil_type", "topic", "language", "crop", "plant", "animal"]]
         if required_slots:
             filled = sum(1 for s in required_slots if working_memory["pending_slots"].get(s))
             slot_score = filled / len(required_slots)
@@ -498,7 +481,6 @@ class AgenticPipeline:
         confidence = round((slot_score * 0.3 + fact_conf * 0.35 + quality_conf * 0.35), 2)
         confidence = min(1.0, confidence)
         
-        # Response Validator
         validator_result = self._execute("sutra_072", {
             "response": working_memory["synthesis"],
             "confidence": confidence,

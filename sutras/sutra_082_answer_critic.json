@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_082",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Answer Critic",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "answer", "type": "string", "required": true},
+    {"name": "sources", "type": "array", "required": false},
+    {"name": "slots", "type": "object", "required": false},
+    {"name": "intent", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "quality", "type": "string"},
+    {"name": "weaknesses", "type": "array"},
+    {"name": "repair_actions", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.critic",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
