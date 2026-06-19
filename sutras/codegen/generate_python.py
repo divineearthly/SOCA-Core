@@ -1,7 +1,7 @@
 """
 Sutra 011: Generate Python Code
 Pramana: Anumana (Inference)
-Now with LLM-based generation via sutra_012
+Generates and verifies Python code
 """
 
 import ast
@@ -9,22 +9,8 @@ import sys
 import io
 import contextlib
 import traceback
-import os
-
-# Import the LLM sutra (sutra_012) dynamically
-def get_llm_sutra():
-    try:
-        import importlib
-        module = importlib.import_module('sutras.llm.llm_generate')
-        return module.execute
-    except Exception as e:
-        return None
 
 def execute(inputs: dict, context: dict = None) -> dict:
-    """
-    Generate and verify Python code.
-    Uses LLM for generation, then verifies with test cases.
-    """
     specification = inputs.get('specification', '')
     test_cases = inputs.get('test_cases', [])
     
@@ -39,13 +25,8 @@ def execute(inputs: dict, context: dict = None) -> dict:
             }
         }
     
-    # First, try template matching (fast path)
+    # Generate code
     code = generate_code_from_spec(specification)
-    
-    # If no template match, try LLM generation
-    if not code:
-        print(f"  🔍 No template match, trying LLM generation...")
-        code = generate_via_llm(specification)
     
     if not code:
         return {
@@ -96,49 +77,11 @@ def execute(inputs: dict, context: dict = None) -> dict:
             }
         }
 
-def generate_via_llm(specification: str) -> str:
-    """
-    Call sutra_012 (LLM) to generate code.
-    """
-    llm_func = get_llm_sutra()
-    if not llm_func:
-        print("  ⚠️ LLM sutra not available")
-        return None
-    
-    prompt = f"Write a Python function for: {specification}\nReturn only the function, no explanation."
-    
-    result = llm_func({
-        "prompt": prompt,
-        "max_tokens": 150,
-        "temperature": 0.2
-    })
-    
-    if result.get('status') == 'success':
-        raw = result['outputs'].get('generated_text', '')
-        # Extract code block if wrapped in ```
-        if '```' in raw:
-            parts = raw.split('```')
-            if len(parts) > 1:
-                raw = parts[1]
-                if raw.startswith('python'):
-                    raw = raw[6:]
-        return raw.strip()
-    
-    print(f"  ❌ LLM generation failed: {result.get('trace', {}).get('error', 'Unknown')}")
-    return None
-
 def generate_code_from_spec(specification: str) -> str:
-    """
-    Generate Python code from a specification using templates.
-    """
     spec_lower = specification.lower()
     
-    # Prime number check
     if "prime" in spec_lower and ("check" in spec_lower or "is" in spec_lower):
         return '''def is_prime(n):
-    """
-    Check if a number is prime.
-    """
     if n <= 1:
         return False
     if n <= 3:
@@ -152,79 +95,39 @@ def generate_code_from_spec(specification: str) -> str:
         i += 6
     return True
 '''
-    
-    # Factorial
     if "factorial" in spec_lower:
         return '''def factorial(n):
-    """
-    Calculate factorial of n.
-    """
     if n <= 1:
         return 1
     return n * factorial(n - 1)
 '''
-    
-    # Fibonacci
-    elif "fibonacci" in spec_lower:
+    if "fibonacci" in spec_lower:
         return '''def fibonacci(n):
-    """
-    Calculate nth Fibonacci number.
-    """
     if n <= 1:
         return n
     return fibonacci(n - 1) + fibonacci(n - 2)
 '''
-    
-    # Sum of list
-    elif "sum" in spec_lower and "list" in spec_lower:
+    if "sum" in spec_lower and "list" in spec_lower:
         return '''def sum_list(numbers):
-    """
-    Sum all numbers in a list.
-    """
     return sum(numbers)
 '''
-    
-    # Palindrome
-    elif "palindrome" in spec_lower:
+    if "palindrome" in spec_lower:
         return '''def is_palindrome(s):
-    """
-    Check if string is a palindrome.
-    """
     s = s.lower().replace(" ", "")
     return s == s[::-1]
 '''
-    
-    # Max of list
-    elif "max" in spec_lower and "list" in spec_lower:
-        return '''def max_list(numbers):
-    """
-    Find maximum number in a list.
-    """
-    if not numbers:
-        return None
-    return max(numbers)
-'''
-    
-    # Min of list
-    elif "min" in spec_lower and "list" in spec_lower:
-        return '''def min_list(numbers):
-    """
-    Find minimum number in a list.
-    """
-    if not numbers:
-        return None
-    return min(numbers)
-'''
-    
     return None
 
 def verify_code(code: str, test_cases: list) -> dict:
-    """
-    Verify generated code by executing test cases.
-    """
+    if not test_cases:
+        return {
+            "passed": False,
+            "results": [],
+            "errors": ["No test cases provided"]
+        }
+    
     results = []
     errors = []
-    
     namespace = {}
     
     try:

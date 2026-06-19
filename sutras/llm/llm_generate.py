@@ -1,6 +1,6 @@
 """
-Sutra 012: LLM Creative Generation (Final Optimized)
-Uses llama-b9728 with direct output capture
+Sutra 012: LLM Creative Generation (Final)
+Uses llama-b9728 with direct non-interactive mode
 Pramana: Shabda (Testimony)
 """
 
@@ -30,6 +30,7 @@ def execute(inputs: dict, context: dict = None) -> dict:
         lib_path = os.path.expanduser("~/soca/llama-b9728")
         env['LD_LIBRARY_PATH'] = lib_path + ":" + env.get('LD_LIBRARY_PATH', '')
         
+        # Use -p for prompt and capture stdout directly
         cmd = [
             binary,
             "-m", model_path,
@@ -39,50 +40,49 @@ def execute(inputs: dict, context: dict = None) -> dict:
             "-ngl", "0",
             "-t", "4",
             "-c", "256",
-            "-b", "256",
-            "--no-display-prompt"
+            "-b", "256"
         ]
         
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=12, env=env)
         
-        # Direct output capture
+        # Get the raw output from stdout
         output = result.stdout.strip()
         
-        # Try to extract the actual response
-        # Method 1: Remove prompt if echoed
-        if output.startswith(prompt):
-            output = output[len(prompt):].strip()
+        # Look for the answer after the prompt
+        # The model typically outputs: [prompt] [answer]
+        if prompt in output:
+            # Get everything after the prompt
+            answer = output.split(prompt, 1)[-1].strip()
+        else:
+            answer = output
         
-        # Method 2: Remove interactive prompts ("> ")
-        if output.startswith("> "):
-            output = output[2:].strip()
+        # Clean up the answer
+        # Remove common artifacts
+        answer = re.sub(r'^[>\s]+', '', answer)
+        answer = re.sub(r'\s+$', '', answer)
         
-        # Method 3: Look for answer pattern after the prompt
-        patterns = [
-            r'(?i)(?:answer:\s*|response:\s*|>)\s*(.+?)(?:\n|$)',
-            r'(?i)([A-Za-z0-9][^>]*?)(?:\n\n|$)'
-        ]
+        # Remove any lines that are just "ok", "yes", "no", ">"
+        lines = answer.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            line = line.strip()
+            if line and len(line) > 2 and not line.lower() in ['ok', 'yes', 'no', '>', '']:
+                cleaned_lines.append(line)
         
-        for pattern in patterns:
-            match = re.search(pattern, output, re.DOTALL)
-            if match:
-                output = match.group(1).strip()
-                break
+        if cleaned_lines:
+            answer = cleaned_lines[0]
+        else:
+            answer = answer[:100]  # Take first 100 chars if no clean lines
         
-        # Clean up
-        output = output.split('\n')[0]  # Take first line
-        output = output.strip()
-        
-        # If we have a valid response, return it
-        if output and len(output) > 2 and len(output) < 200:
+        # If we got a valid answer, return it
+        if answer and len(answer) > 2:
             return {
                 "status": "success",
-                "outputs": {"generated_text": output},
+                "outputs": {"generated_text": answer},
                 "trace": {"sutra_id": "sutra_012", "backend": "llama-cli"}
             }
         else:
-            # Try fallback with the raw output
-            return fallback_response(prompt, f"Raw output: {output[:30]}")
+            return fallback_response(prompt, "Empty response")
             
     except subprocess.TimeoutExpired:
         return fallback_response(prompt, "Timeout")
@@ -124,8 +124,7 @@ def find_model():
     paths = [
         "~/soca/models/tinyllama-q2_K.gguf",
         "~/soca/models/tinyllama-1.1b-chat-v1.0.Q2_K.gguf",
-        "~/soca/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
-        "~/soca/models/phi-2.Q4_K_M.gguf"
+        "~/soca/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
     ]
     for path in paths:
         expanded = os.path.expanduser(path)

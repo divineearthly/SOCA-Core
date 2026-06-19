@@ -3,8 +3,8 @@
   "sutra_id": "sutra_019",
   "sutra_version": "1.0.0",
   "compatibility": ["0.1.x"],
-  "name": "Vedic Language Generator",
-  "type": "vedic_llm",
+  "name": "Vedic Reasoning Engine",
+  "type": "vedic_reasoning",
   "category": "generative",
   "pramana": "shabda",
   "inputs": [
@@ -19,7 +19,7 @@
   ],
   "prerequisites": [],
   "operation": {
-    "module": "sutras.vedic_llm.vedic_generator",
+    "module": "sutras.vedic_reasoning.vedic_generator",
     "entry_point": "execute"
   },
   "validation": {

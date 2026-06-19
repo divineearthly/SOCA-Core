@@ -1,7 +1,3 @@
-"""
-Registry Manager for SOCA with Pramana Confidence
-"""
-
 import sqlite3
 import json
 import os
@@ -13,12 +9,9 @@ class RegistryManager:
         self._ensure_db()
     
     def _ensure_db(self):
-        """Create database and tables if they don't exist."""
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
-        
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS sutra_registry (
                     sutra_id TEXT PRIMARY KEY,
@@ -38,7 +31,6 @@ class RegistryManager:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS verification_results (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +43,6 @@ class RegistryManager:
                     FOREIGN KEY (sutra_id) REFERENCES sutra_registry(sutra_id)
                 )
             """)
-            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS trace_log (
                     trace_id TEXT PRIMARY KEY,
@@ -61,13 +52,11 @@ class RegistryManager:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            
             conn.commit()
     
     def register_sutra(self, sutra_json: dict):
-        """Register a Sutra from its JSON definition."""
         pramana = sutra_json.get('pramana', 'anumana')
-        pramana_confidence = self._get_pramana_confidence(pramana)
+        pramana_confidence = {'pratyaksha': 1.0, 'anumana': 0.9, 'upamana': 0.8, 'shabda': 0.6}.get(pramana, 0.9)
         
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -84,25 +73,14 @@ class RegistryManager:
                 sutra_json.get('category', 'core'),
                 pramana,
                 pramana_confidence,
-                pramana_confidence,  # initial confidence = pramana_confidence
+                pramana_confidence,
                 sutra_json.get('operation', {}).get('module'),
                 sutra_json.get('operation', {}).get('entry_point', 'execute'),
                 True
             ))
             conn.commit()
     
-    def _get_pramana_confidence(self, pramana: str) -> float:
-        """Get confidence weight for a Pramana type."""
-        weights = {
-            'pratyaksha': 1.0,   # Direct perception - highest
-            'anumana': 0.9,      # Inference - very reliable
-            'upamana': 0.8,      # Analogy/comparison
-            'shabda': 0.6        # Testimony - lowest (LLM output)
-        }
-        return weights.get(pramana, 0.9)
-    
     def get_sutra(self, sutra_id: str) -> dict:
-        """Retrieve a Sutra definition from the registry."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -128,7 +106,6 @@ class RegistryManager:
             return None
     
     def record_usage(self, sutra_id: str, success: bool):
-        """Record Sutra execution usage."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             if success:
@@ -152,7 +129,6 @@ class RegistryManager:
             conn.commit()
     
     def log_trace(self, trace_data: dict):
-        """Log a complete execution trace."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -167,18 +143,14 @@ class RegistryManager:
             conn.commit()
     
     def get_stats(self) -> dict:
-        """Get registry statistics."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM sutra_registry WHERE is_active = TRUE")
             total_sutras = cursor.fetchone()[0]
-            
             cursor.execute("SELECT COUNT(*) FROM trace_log")
             total_traces = cursor.fetchone()[0]
-            
             cursor.execute("SELECT SUM(usage_count) FROM sutra_registry")
             total_usage = cursor.fetchone()[0] or 0
-            
             return {
                 'total_sutras': total_sutras,
                 'total_traces': total_traces,

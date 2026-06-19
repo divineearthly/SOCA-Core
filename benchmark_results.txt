@@ -1,0 +1,43 @@
+============================================================
+📊 SOCA BENCHMARK SUITE v0.2
+Platform: Android (Termux)
+============================================================
+
+📈 Memory Usage:
+  Runtime memory: 0.0 MB
+
+📋 Dependency Scheduling:
+  Status: success
+  Verified: False
+  Time: 68.7 ms
+  Trace ID: 312a2380
+
+🔄 Cycle Detection:
+  Status: failure
+  Detected: True
+  Time: 18.2 ms
+
+💻 Code Generation:
+  Status: success
+  Verified: True
+  Tests: 0/0 passed
+
+📊 Registry:
+  Total Sutras: 15
+  Total Traces: 107
+  Total Usage: 16
+
+🧠 LLM Model:
+  Available: Yes (638 MB)
+
+============================================================
+📊 SUMMARY TABLE
+============================================================
+  Memory Usage:      0.0 MB
+  Scheduling:        False (68.7 ms)
+  Cycle Detection:   True (18.2 ms)
+  Code Gen Status:   success (0/0)
+  Total Sutras:      15
+  Total Traces:      107
+  Total Usage:       16
+============================================================
