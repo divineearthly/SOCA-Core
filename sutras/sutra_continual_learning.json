@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_014",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Continual Learning",
+  "type": "learning",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "new_knowledge", "type": "object", "required": true},
+    {"name": "domain", "type": "string", "required": false},
+    {"name": "importance", "type": "integer", "required": false}
+  ],
+  "outputs": [
+    {"name": "learned", "type": "boolean"},
+    {"name": "layer", "type": "string"},
+    {"name": "domain", "type": "string"},
+    {"name": "importance", "type": "integer"}
+  ],
+  "prerequisites": ["sutra_013"],
+  "operation": {
+    "module": "sutras.memory.continual_learning",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {
+          "new_knowledge": {"concept": "prime numbers", "definition": "Numbers divisible only by 1 and themselves"},
+          "domain": "mathematics",
+          "importance": 8
+        },
+        "expected": {"learned": true}
+      }
+    ]
+  }
+}

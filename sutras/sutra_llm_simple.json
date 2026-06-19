@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_012",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Simple LLM Responses",
+  "type": "llm",
+  "category": "generative",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "prompt", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "generated_text", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.llm.llm_simple",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"prompt": "What is 2+2?"},
+        "expected": {"generated_text": "2 + 2 = 4"}
+      }
+    ]
+  }
+}

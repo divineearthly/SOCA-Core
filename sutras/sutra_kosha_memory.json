@@ -1,0 +1,48 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_013",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Kosha-Net Memory",
+  "type": "memory",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "key", "type": "string", "required": true},
+    {"name": "value", "type": "object", "required": false},
+    {"name": "layer", "type": "string", "required": false},
+    {"name": "ttl", "type": "integer", "required": false}
+  ],
+  "outputs": [
+    {"name": "stored", "type": "boolean"},
+    {"name": "found", "type": "boolean"},
+    {"name": "value", "type": "object"},
+    {"name": "layer", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.memory.kosha_memory",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {
+          "action": "store",
+          "key": "test_key",
+          "value": {"test": "data"},
+          "layer": "manomaya"
+        },
+        "expected": {"stored": true}
+      },
+      {
+        "input": {
+          "action": "retrieve",
+          "key": "test_key"
+        },
+        "expected": {"found": true}
+      }
+    ]
+  }
+}
