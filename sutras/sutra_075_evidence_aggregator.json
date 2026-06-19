@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_075",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Evidence Aggregator",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "answer", "type": "string", "required": true},
+    {"name": "sources", "type": "array", "required": false},
+    {"name": "knowledge_results", "type": "array", "required": false},
+    {"name": "domain", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "confidence", "type": "number"},
+    {"name": "level", "type": "string"},
+    {"name": "source_count", "type": "integer"},
+    {"name": "verdict", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.evidence_aggregator",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_074",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Knowledge Retriever",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true},
+    {"name": "district", "type": "string", "required": false},
+    {"name": "crop", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "knowledge_results", "type": "array"},
+    {"name": "count", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.knowledge_retriever",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

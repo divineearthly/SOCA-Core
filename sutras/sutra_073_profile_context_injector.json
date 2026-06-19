@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_073",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Profile Context Injector",
+  "type": "core",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "user_id", "type": "string", "required": false},
+    {"name": "query", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "profile_loaded", "type": "boolean"},
+    {"name": "district", "type": "string"},
+    {"name": "soil_type", "type": "string"},
+    {"name": "crop_history", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.profile_context_injector",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
