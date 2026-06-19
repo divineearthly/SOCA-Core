@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_036",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Knowledge Contributor",
+  "type": "community",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "domain", "type": "string", "required": true},
+    {"name": "data", "type": "object", "required": true},
+    {"name": "contributor", "type": "string", "required": false},
+    {"name": "location", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "submitted", "type": "boolean"},
+    {"name": "domain", "type": "string"},
+    {"name": "status", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.community.knowledge_contributor",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_038",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Local LLM Gateway",
+  "type": "llm",
+  "category": "core",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "prompt", "type": "string", "required": true},
+    {"name": "model", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "generated_text", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.llm.local_llm",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
