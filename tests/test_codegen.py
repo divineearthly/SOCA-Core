@@ -1,7 +1,12 @@
 """Test code generation"""
 import sys
-sys.path.append('runtime')
-from soca_runtime import SOCARuntime
+import os
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from runtime.soca_runtime import SOCARuntime
 
 def test_codegen():
     runtime = SOCARuntime()
@@ -19,13 +24,8 @@ def test_codegen():
     
     assert result['status'] == 'success', f"Code generation failed: {result.get('error')}"
     
-    # Check if test_results exist in outputs
-    if 'outputs' in result:
-        test_results = result['outputs'].get('test_results', [])
-        verified = result['outputs'].get('verified', False)
-    else:
-        test_results = result.get('test_results', [])
-        verified = result.get('verified', False)
+    test_results = result['outputs'].get('test_results', [])
+    verified = result['outputs'].get('verified', False)
     
     passed = sum(1 for t in test_results if t.get('passed', False))
     total = len(test_results)

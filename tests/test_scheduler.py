@@ -1,7 +1,14 @@
 """Test dependency scheduling"""
 import sys
-sys.path.append('runtime')
-from soca_runtime import SOCARuntime
+import os
+from pathlib import Path
+
+# Add project root to Python path so we can import runtime modules
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+# Now we can import from runtime
+from runtime.soca_runtime import SOCARuntime
 
 def test_scheduling():
     runtime = SOCARuntime()
@@ -11,22 +18,14 @@ def test_scheduling():
     }
     expected = [["A"], ["B", "C"], ["D"]]
     
-    # Step 1: Get schedule
     schedule_result = runtime.solve_sequence(
         ["sutra_008", "sutra_009"],
         {"graph": graph}
     )
     
-    # Check if we got a valid schedule
     assert schedule_result['status'] == 'success', f"Schedule failed: {schedule_result.get('error')}"
     
-    # Step 2: Verify the schedule using sutra_010
-    # The schedule is in schedule_result['outputs']['schedule']
-    # But if outputs doesn't exist, check trace or other fields
-    if 'outputs' in schedule_result:
-        actual_schedule = schedule_result['outputs'].get('schedule', [])
-    else:
-        actual_schedule = schedule_result.get('schedule', [])
+    actual_schedule = schedule_result['outputs'].get('schedule', [])
     
     verify_result = runtime.solve_sequence(
         ["sutra_010"],

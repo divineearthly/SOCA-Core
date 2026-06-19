@@ -10,7 +10,9 @@ import time
 import uuid
 import os
 from typing import List, Dict, Any
-from registry_manager import RegistryManager
+
+# Use relative import
+from .registry_manager import RegistryManager
 
 class SOCARuntime:
     def __init__(self, registry_path: str = "registry/soca.db"):
@@ -85,7 +87,6 @@ class SOCARuntime:
                         for key, value in exec_result['outputs'].items():
                             results[key] = value
                     
-                    # ✅ FIX: Record usage on every successful execution
                     self.registry.record_usage(sutra_id, True)
                     
                     trace_entry = {
@@ -96,7 +97,6 @@ class SOCARuntime:
                     }
                     traces.append(trace_entry)
                 else:
-                    # ✅ FIX: Record failure
                     self.registry.record_usage(sutra_id, False)
                     return {
                         "status": "failure",
@@ -104,7 +104,6 @@ class SOCARuntime:
                         "trace": {"executed_sutras": traces + [{"id": sutra_id, "status": "failure"}]}
                     }
             except Exception as e:
-                # ✅ FIX: Record exception
                 self.registry.record_usage(sutra_id, False)
                 return {
                     "status": "failure",
