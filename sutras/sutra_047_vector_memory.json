@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_047",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Vector Memory",
+  "type": "memory",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "query", "type": "string", "required": false},
+    {"name": "text", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "results", "type": "array"},
+    {"name": "count", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.memory.vector_memory",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

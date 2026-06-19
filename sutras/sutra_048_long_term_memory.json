@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_048",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Long-Term Memory",
+  "type": "memory",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "user_id", "type": "string", "required": false},
+    {"name": "key", "type": "string", "required": false},
+    {"name": "value", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "value", "type": "string"},
+    {"name": "memory", "type": "object"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.memory.long_term_memory",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

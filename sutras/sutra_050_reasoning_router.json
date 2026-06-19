@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_050",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Reasoning Router",
+  "type": "reasoning",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "intent", "type": "string", "required": true},
+    {"name": "query", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "sutras", "type": "array"},
+    {"name": "fallback", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.reasoning.reasoning_router",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
