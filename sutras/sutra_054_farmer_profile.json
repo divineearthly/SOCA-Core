@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_054",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Farmer Profile",
+  "type": "memory",
+  "category": "domain",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "farmer_id", "type": "string", "required": false},
+    {"name": "district", "type": "string", "required": false},
+    {"name": "soil_type", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "name", "type": "string"},
+    {"name": "district", "type": "string"},
+    {"name": "soil_type", "type": "string"},
+    {"name": "crop_history", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.memory.farmer_profile",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

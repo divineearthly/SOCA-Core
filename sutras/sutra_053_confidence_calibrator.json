@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_053",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Confidence Calibrator",
+  "type": "verification",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "source_count", "type": "integer", "required": false},
+    {"name": "retrieval_score", "type": "number", "required": false},
+    {"name": "validation_score", "type": "number", "required": false},
+    {"name": "reputation_score", "type": "number", "required": false},
+    {"name": "domain", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "confidence", "type": "number"},
+    {"name": "level", "type": "string"},
+    {"name": "emoji", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.verification.confidence_calibrator",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
