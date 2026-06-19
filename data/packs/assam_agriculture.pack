@@ -1,0 +1,10 @@
+{
+  "name": "Assam Agriculture",
+  "version": "1.0.0",
+  "districts": ["bongaigaon", "barpeta", "jorhat", "dibrugarh", "nagaon"],
+  "crops": {
+    "rice": {"varieties": ["Sali", "Boro", "Ahu"]},
+    "tea": {"varieties": ["CTC", "Orthodox"]},
+    "jute": {"varieties": ["White", "Tossa"]}
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Assam Medicinal Plants",
+  "version": "1.0.0",
+  "plants": {
+    "tulsi": {"uses": ["cough", "cold", "respiratory"]},
+    "neem": {"uses": ["skin", "dental", "antibacterial"]},
+    "ginger": {"uses": ["digestion", "nausea", "anti-inflammatory"]},
+    "turmeric": {"uses": ["anti-inflammatory", "antioxidant"]},
+    "amla": {"uses": ["immunity", "digestion"]}
+  }
+}
