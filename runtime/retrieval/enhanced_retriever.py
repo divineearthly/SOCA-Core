@@ -44,16 +44,19 @@ class EnhancedRetriever:
     
     def _extract_concepts(self, query: str) -> list:
         """Extract concepts from query."""
-        # Simple concept extraction
         concept_map = {
-            'crop': ['crop', 'plant', 'grow', 'cultivate'],
-            'soil': ['soil', 'earth', 'ground'],
-            'season': ['season', 'kharif', 'rabi', 'summer', 'winter'],
-            'rainfall': ['rain', 'rainfall', 'monsoon'],
-            'pest': ['pest', 'insect', 'disease'],
-            'water': ['water', 'irrigation', 'drainage'],
-            'math': ['math', 'numbers', 'addition', 'subtraction'],
-            'language': ['language', 'translate', 'translate', 'hindi', 'assamese']
+            'crop': ['crop', 'plant', 'grow', 'cultivate', 'agriculture', 'farming'],
+            'soil': ['soil', 'earth', 'ground', 'loamy', 'clay', 'sandy'],
+            'season': ['season', 'kharif', 'rabi', 'summer', 'winter', 'monsoon'],
+            'rainfall': ['rain', 'rainfall', 'monsoon', 'weather'],
+            'pest': ['pest', 'insect', 'disease', 'bug', 'aphid'],
+            'water': ['water', 'irrigation', 'drainage', 'flood'],
+            'math': ['math', 'numbers', 'addition', 'subtraction', 'multiplication', 'division'],
+            'language': ['language', 'translate', 'translation', 'hindi', 'assamese', 'bengali', 'sanskrit'],
+            'medicinal': ['medicinal', 'tulsi', 'neem', 'aloe', 'ginger', 'turmeric', 'amla'],
+            'education': ['education', 'tutor', 'teach', 'learn', 'school'],
+            'code': ['code', 'generate', 'python', 'function', 'program'],
+            'weather': ['weather', 'rain', 'rainfall', 'climate', 'monsoon', 'assam', 'kharif', 'rabi', 'season']
         }
         
         found = []
@@ -61,6 +64,14 @@ class EnhancedRetriever:
             for kw in keywords:
                 if kw in query:
                     found.append(concept)
+                    break
+        
+        # Special case: if "crop" is found, also include "weather" if location or season mentioned
+        if 'crop' in found and ('weather' not in found):
+            weather_keywords = ['assam', 'kharif', 'rabi', 'rain', 'monsoon', 'season']
+            for kw in weather_keywords:
+                if kw in query:
+                    found.append('weather')
                     break
         
         return found if found else ['general']
@@ -73,3 +84,15 @@ class EnhancedRetriever:
             'concepts': self._extract_concepts(query),
             'retrieved_sutras': details
         }
+    
+    def get_confidence(self, sutra_id: str) -> float:
+        """Get confidence score for a sutra."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT AVG(confidence) 
+                FROM sutra_concepts 
+                WHERE sutra_id = ?
+            """, (sutra_id,))
+            row = cursor.fetchone()
+            return row[0] if row[0] else 0.5
