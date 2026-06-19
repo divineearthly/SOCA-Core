@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_023",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Medicinal Plants",
+  "type": "local_knowledge",
+  "category": "domain",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "plant", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "information", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.local_knowledge.medicinal_plants",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"plant": "tulsi"},
+        "expected": {"information": "Tulsi (Holy Basil): Used for cough, cold, and respiratory issues."}
+      }
+    ]
+  }
+}

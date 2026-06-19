@@ -1,0 +1,30 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_024",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Basic Translator",
+  "type": "language",
+  "category": "domain",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "word", "type": "string", "required": true},
+    {"name": "target_lang", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "translation", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.language.translator",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"word": "hello", "target_lang": "hi"},
+        "expected": {"translation": "नमस्ते"}
+      }
+    ]
+  }
+}

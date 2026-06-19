@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_021",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Crop Advisor",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "soil_type", "type": "string", "required": true},
+    {"name": "season", "type": "string", "required": true},
+    {"name": "rainfall", "type": "integer", "required": false}
+  ],
+  "outputs": [
+    {"name": "crops", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.crop_advisor",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"soil_type": "loamy", "season": "kharif"},
+        "expected": {"crops": ["Rice", "Cotton", "Sugarcane"]}
+      }
+    ]
+  }
+}
