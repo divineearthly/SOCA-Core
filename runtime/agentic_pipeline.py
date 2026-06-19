@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v22.4 - Optimized Reflection
+SOCA Agentic Pipeline v22.5 - Fixed Enrichment Propagation
 """
 
 import sys
@@ -12,7 +12,7 @@ sys.path.append('runtime')
 from soca_runtime import SOCARuntime
 
 GOAL_TTL = 86400
-REFLECTION_THRESHOLD = 0.65  # Changed from 0.7
+REFLECTION_THRESHOLD = 0.65
 MAX_ITERATIONS = 3
 RETRIEVAL_STRATEGIES = ['bm25', 'semantic', 'hybrid', 'deep']
 
@@ -138,7 +138,6 @@ class AgenticPipeline:
         else:
             working_memory["intent"] = intent
 
-        # Goal decomposition
         subgoals = self._decompose_goal(intent, working_memory)
         working_memory["subgoals"] = subgoals
 
@@ -214,7 +213,6 @@ class AgenticPipeline:
         return self._execute_goal_with_reflection(user_id, start_time)
 
     def _decompose_goal(self, intent: str, working_memory: dict) -> list:
-        """Decompose a goal into subgoals."""
         if intent == 'agriculture':
             subgoals = []
             if not working_memory.get("pending_slots", {}).get("soil_type"):
@@ -227,7 +225,6 @@ class AgenticPipeline:
         return []
 
     def _execute_subgoals(self, goal: dict, working_memory: dict):
-        """Execute subgoals and store results."""
         subgoals = goal.get("subgoals", [])
         results = goal.get("subgoal_results", {})
 
@@ -277,7 +274,7 @@ class AgenticPipeline:
 
             result = self._execute_full_reasoning(working_memory, start_time)
 
-            # Structured Critic
+            # Critic gets the enriched answer
             critic_result = self._execute("sutra_083", {
                 "answer": result.get("answer", ""),
                 "sources": result.get("sources", []),
@@ -581,7 +578,6 @@ class AgenticPipeline:
         })
         if ranker_result.get("status") == "success":
             working_memory["ranked_knowledge"] = ranker_result.get("outputs", {}).get("ranked_results", [])
-            # FIX 3: Extract sources from ranked knowledge
             working_memory["sources"] = [
                 r.get("source", r.get("id", f"kb_{i}")) 
                 for i, r in enumerate(working_memory["ranked_knowledge"][:3])
@@ -653,6 +649,7 @@ class AgenticPipeline:
         ranked_crops = []
         alternatives = []
         sources = working_memory.get("sources", [])
+        enriched_synthesis = ""
 
         if synthesis_result.get("status") == "success":
             synthesis = synthesis_result.get("outputs", {}).get("synthesis", "")
@@ -676,14 +673,17 @@ class AgenticPipeline:
                 working_memory["synthesis"] = synthesis
                 working_memory["sources"] = sources
 
-        # FIX 2: Enrich answer with slots before critic sees it
+        # FIX 2: Enrich answer with slots - UPDATE THE VARIABLE
+        enriched_synthesis = synthesis
         slots = working_memory.get("pending_slots", {})
         if slots.get("soil_type") and slots["soil_type"] not in synthesis.lower():
-            synthesis += f" | Soil: {slots['soil_type']}"
+            enriched_synthesis += f" | Soil: {slots['soil_type']}"
         if slots.get("district") and slots["district"] not in synthesis.lower():
-            synthesis += f" | District: {slots['district']}"
+            enriched_synthesis += f" | District: {slots['district']}"
 
-        self._add_trace("synthesis", synthesis[:50])
+        # Use enriched_synthesis everywhere
+        working_memory["synthesis"] = enriched_synthesis
+        self._add_trace("synthesis", enriched_synthesis[:50])
 
         elapsed = time.time() - start_time
 
@@ -691,8 +691,8 @@ class AgenticPipeline:
             "status": "success",
             "query": working_memory["query"],
             "intent": working_memory["intent"],
-            "answer": synthesis,
-            "synthesis": synthesis,
+            "answer": enriched_synthesis,  # ← FIXED: use enriched
+            "synthesis": enriched_synthesis,  # ← FIXED: use enriched
             "recommendation": recommendation,
             "ranked_crops": ranked_crops,
             "alternatives": alternatives,
