@@ -1,0 +1,604 @@
+{
+  "nodes": [
+    {
+      "id": "sutra_001",
+      "name": "Integer Addition",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_003",
+      "name": "Integer Multiplication",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_005",
+      "name": "Integer Comparison",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_008",
+      "name": "Dependency Sort",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_009",
+      "name": "Schedule Task",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_010",
+      "name": "Verify Output",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_011",
+      "name": "Generate Python Code",
+      "category": "generative",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_012",
+      "name": "Simple LLM Responses",
+      "category": "generative",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_013",
+      "name": "Kosha-Net Memory",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_014",
+      "name": "Continual Learning",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_015",
+      "name": "Sutra Discovery",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_016",
+      "name": "Sutra Generator",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_017",
+      "name": "Sutra Validator",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_018",
+      "name": "Evolution Manager",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_019",
+      "name": "Vedic Reasoning Engine",
+      "category": "generative",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_021",
+      "name": "Crop Advisor",
+      "category": "domain",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_022",
+      "name": "Math Tutor",
+      "category": "domain",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_023",
+      "name": "Medicinal Plants",
+      "category": "domain",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_024",
+      "name": "Basic Translator",
+      "category": "domain",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_025",
+      "name": "Weather Advisor",
+      "category": "domain",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_026",
+      "name": "Pest Detection",
+      "category": "domain",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_027",
+      "name": "Water Management",
+      "category": "domain",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_028",
+      "name": "Answer Composer",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_029",
+      "name": "Market Advisor",
+      "category": "domain",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_030",
+      "name": "Fertilizer Advisor",
+      "category": "domain",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_031",
+      "name": "Livestock Advisor",
+      "category": "domain",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_032",
+      "name": "Assamese NLU",
+      "category": "domain",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_033",
+      "name": "Assamese Translation",
+      "category": "domain",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_034",
+      "name": "Assamese Voice Commands",
+      "category": "domain",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_035",
+      "name": "Market Intelligence",
+      "category": "domain",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_036",
+      "name": "Knowledge Contributor",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_037",
+      "name": "Voice Command Handler",
+      "category": "interface",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_038",
+      "name": "Local LLM Gateway",
+      "category": "core",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_039",
+      "name": "Knowledge Validator",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_040",
+      "name": "Reputation Engine",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_041",
+      "name": "Knowledge Search",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_042",
+      "name": "Evidence Scorer",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_043",
+      "name": "Source Fusion",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_044",
+      "name": "District Intelligence",
+      "category": "domain",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_045",
+      "name": "Intent Classifier",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_046",
+      "name": "Clarification Engine",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_047",
+      "name": "Vector Memory",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_048",
+      "name": "Long-Term Memory",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_050",
+      "name": "Reasoning Router",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_053",
+      "name": "Confidence Calibrator",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_054",
+      "name": "Farmer Profile",
+      "category": "domain",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_055",
+      "name": "Semantic Retrieval",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_056",
+      "name": "Crop Rotation Advisor",
+      "category": "domain",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_057",
+      "name": "Yield Predictor",
+      "category": "domain",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_058",
+      "name": "Village Knowledge Pack",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_059",
+      "name": "Yield Validator",
+      "category": "domain",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_061",
+      "name": "Village Memory",
+      "category": "domain",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_062",
+      "name": "Offline Voice",
+      "category": "interface",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_063",
+      "name": "Local LLM Integration",
+      "category": "core",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_064",
+      "name": "Bengali NLU",
+      "category": "language",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_065",
+      "name": "Hindi NLU",
+      "category": "language",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_066",
+      "name": "Sanskrit NLU",
+      "category": "language",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_067",
+      "name": "Bodo NLU",
+      "category": "language",
+      "pramana": "shabda"
+    },
+    {
+      "id": "sutra_068",
+      "name": "Context Builder",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_069",
+      "name": "Query Planner",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_070",
+      "name": "Multi-Hop Reasoner",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_071",
+      "name": "Fact Checker",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_072",
+      "name": "Response Validator",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_073",
+      "name": "Profile Context Injector",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_074",
+      "name": "Knowledge Retriever",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_075",
+      "name": "Evidence Aggregator",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_076",
+      "name": "Persistent Profile Manager",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_077",
+      "name": "Retrieval Ranker",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_078",
+      "name": "Clarification Generator",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_079",
+      "name": "Evidence Quality Scorer",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_080",
+      "name": "BM25 Retriever",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_081",
+      "name": "Generic Slot Extractor",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_082",
+      "name": "Answer Critic",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_083",
+      "name": "Structured Critic",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_084",
+      "name": "Synthesis Engine",
+      "category": "core",
+      "pramana": "anumana"
+    },
+    {
+      "id": "sutra_085",
+      "name": "Vedic Matrix Multiplication",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_086",
+      "name": "Tri-Nadi Activation",
+      "category": "core",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_087",
+      "name": "Math Tutor",
+      "category": "domain",
+      "pramana": "pratyaksha"
+    },
+    {
+      "id": "sutra_088",
+      "name": "Nutrition Advisor",
+      "category": "domain",
+      "pramana": "shabda"
+    }
+  ],
+  "edges": [
+    {
+      "source": "sutra_001",
+      "target": "sutra_011"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_012"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_019"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_021"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_022"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_023"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_024"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_025"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_026"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_027"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_029"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_030"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_031"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_032"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_033"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_034"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_035"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_044"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_054"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_056"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_057"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_059"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_061"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_087"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_088"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_037"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_062"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_064"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_065"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_066"
+    },
+    {
+      "source": "sutra_001",
+      "target": "sutra_067"
+    }
+  ]
+}
