@@ -17,7 +17,7 @@ def execute(inputs: dict, context: dict = None) -> dict:
     success = inputs.get('success', False)
     confidence_delta = inputs.get('confidence_delta', 0)
     
-    db_path = os.path.expanduser("~/soca/registry/learning.db")
+    db_path = os.path.expanduser("~/soca/registry/soca.db")
     
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
