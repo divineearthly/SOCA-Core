@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_095",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Confidence Calibrator",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "predicted_confidence", "type": "number", "required": true},
+    {"name": "intent", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "predicted", "type": "number"},
+    {"name": "historical_avg", "type": "number"},
+    {"name": "calibrated", "type": "number"}
+  ],
+  "prerequisites": ["sutra_090"],
+  "operation": {
+    "module": "sutras.core.confidence_calibrator",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

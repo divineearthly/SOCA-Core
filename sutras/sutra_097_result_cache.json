@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_097",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Result Cache",
+  "type": "core",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "query", "type": "string", "required": false},
+    {"name": "result", "type": "object", "required": false},
+    {"name": "ttl", "type": "integer", "required": false}
+  ],
+  "outputs": [
+    {"name": "cached", "type": "boolean"},
+    {"name": "result", "type": "object"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.result_cache",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

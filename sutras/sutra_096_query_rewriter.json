@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_096",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Query Rewriter",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true},
+    {"name": "intent", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "original", "type": "string"},
+    {"name": "rewritten", "type": "string"},
+    {"name": "expanded", "type": "boolean"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.query_rewriter",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
