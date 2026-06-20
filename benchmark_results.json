@@ -1,0 +1,616 @@
+[
+  {
+    "query": "What crop should I grow in Assam?",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_025",
+      "sutra_021"
+    ],
+    "retrieved": [
+      "sutra_025",
+      "sutra_021"
+    ],
+    "match": true,
+    "time_ms": 37.631988525390625,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (0.95)\n  \u2022 rainfall: Unknow"
+  },
+  {
+    "query": "Best crop for loamy soil",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_021"
+    ],
+    "retrieved": [
+      "sutra_021",
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 34.47866439819336,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 water_holding: U"
+  },
+  {
+    "query": "What to plant in kharif season?",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_025",
+      "sutra_021"
+    ],
+    "retrieved": [
+      "sutra_025",
+      "sutra_021"
+    ],
+    "match": true,
+    "time_ms": 39.55984115600586,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 rainfall: Unknow"
+  },
+  {
+    "query": "How to control pests on rice?",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_026"
+    ],
+    "retrieved": [
+      "sutra_026"
+    ],
+    "match": true,
+    "time_ms": 13.606548309326172,
+    "synthesis": "Based on multiple sources:\n  \u2022 pest: Unknown (0.95)\n  \u2022 treatment: Consult local agricultural office"
+  },
+  {
+    "query": "What is the best irrigation method?",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_027"
+    ],
+    "retrieved": [
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 13.748407363891602,
+    "synthesis": "Based on multiple sources:\n  \u2022 water_holding: Unknown (1.00)\n  \u2022 irrigation_frequency: Consult local"
+  },
+  {
+    "query": "Which crop needs less water?",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_021",
+      "sutra_027"
+    ],
+    "retrieved": [
+      "sutra_021",
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 27.15158462524414,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 water_holding: U"
+  },
+  {
+    "query": "What to grow in clay soil?",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_021"
+    ],
+    "retrieved": [
+      "sutra_021",
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 30.14993667602539,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 water_holding: U"
+  },
+  {
+    "query": "Pest management for cotton",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_026"
+    ],
+    "retrieved": [
+      "sutra_026"
+    ],
+    "match": true,
+    "time_ms": 15.212059020996094,
+    "synthesis": "Based on multiple sources:\n  \u2022 pest: Unknown (1.00)\n  \u2022 treatment: Consult local agricultural office"
+  },
+  {
+    "query": "Farming advice for monsoon season",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_025"
+    ],
+    "retrieved": [
+      "sutra_025",
+      "sutra_021"
+    ],
+    "match": true,
+    "time_ms": 35.840511322021484,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 rainfall: Unknow"
+  },
+  {
+    "query": "How to prevent crop diseases?",
+    "domain": "agriculture",
+    "expected": [
+      "sutra_026"
+    ],
+    "retrieved": [
+      "sutra_021",
+      "sutra_026"
+    ],
+    "match": true,
+    "time_ms": 44.48246955871582,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 pest: Unknown (1"
+  },
+  {
+    "query": "What is addition?",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 20.978450775146484,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "Explain multiplication",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 15.813589096069336,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "How to subtract numbers?",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 15.020608901977539,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "What is division?",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 32.198190689086914,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "Explain fractions",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 20.491361618041992,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "What are decimals?",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 30.037403106689453,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "Math tutor for addition",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 22.114276885986328,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "How to learn multiplication?",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 23.813247680664062,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "Explain subtraction to kids",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 14.929056167602539,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "What is the sum of numbers?",
+    "domain": "education",
+    "expected": [
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 12.587547302246094,
+    "synthesis": "explanation: I can explain: addition, subtraction, multiplication, division, fractions, decimals (co"
+  },
+  {
+    "query": "Translate hello to Hindi",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_024"
+    ],
+    "match": true,
+    "time_ms": 30.481338500976562,
+    "synthesis": "Based on multiple sources:\n  \u2022 target_lang: hi (0.65)\n  \u2022 translation: Word \"\" not found for hi (0.6"
+  },
+  {
+    "query": "How to say water in Assamese?",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_025",
+      "sutra_024",
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 76.5993595123291,
+    "synthesis": "Based on multiple sources:\n  \u2022 water_holding: Unknown (1.00)\n  \u2022 irrigation_frequency: Consult local"
+  },
+  {
+    "query": "Translate food to Bengali",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_024"
+    ],
+    "match": true,
+    "time_ms": 12.582778930664062,
+    "synthesis": "Based on multiple sources:\n  \u2022 target_lang: hi (0.77)\n  \u2022 translation: Word \"\" not found for hi (0.7"
+  },
+  {
+    "query": "What is earth in Sanskrit?",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_024",
+      "sutra_021",
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 48.03013801574707,
+    "synthesis": "Based on multiple sources:\n  \u2022 water_holding: Unknown (1.00)\n  \u2022 irrigation_frequency: Consult local"
+  },
+  {
+    "query": "Translate sky to Hindi",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_024"
+    ],
+    "match": true,
+    "time_ms": 15.699386596679688,
+    "synthesis": "Based on multiple sources:\n  \u2022 target_lang: hi (0.79)\n  \u2022 translation: Word \"\" not found for hi (0.7"
+  },
+  {
+    "query": "Friend in Bengali",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_024"
+    ],
+    "match": true,
+    "time_ms": 31.000137329101562,
+    "synthesis": "Based on multiple sources:\n  \u2022 target_lang: hi (0.80)\n  \u2022 translation: Word \"\" not found for hi (0.8"
+  },
+  {
+    "query": "Assamese translation for water",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_025",
+      "sutra_024",
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 48.2635498046875,
+    "synthesis": "Based on multiple sources:\n  \u2022 water_holding: Unknown (1.00)\n  \u2022 irrigation_frequency: Consult local"
+  },
+  {
+    "query": "Sanskrit word for earth",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_024",
+      "sutra_021",
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 41.172027587890625,
+    "synthesis": "Based on multiple sources:\n  \u2022 water_holding: Unknown (1.00)\n  \u2022 irrigation_frequency: Consult local"
+  },
+  {
+    "query": "Hindi translation of hello",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_024"
+    ],
+    "match": true,
+    "time_ms": 16.67022705078125,
+    "synthesis": "Based on multiple sources:\n  \u2022 target_lang: hi (0.83)\n  \u2022 translation: Word \"\" not found for hi (0.8"
+  },
+  {
+    "query": "Translate friend to Assamese",
+    "domain": "translation",
+    "expected": [
+      "sutra_024"
+    ],
+    "retrieved": [
+      "sutra_025",
+      "sutra_024"
+    ],
+    "match": true,
+    "time_ms": 33.43391418457031,
+    "synthesis": "Based on multiple sources:\n  \u2022 rainfall: Unknown (1.00)\n  \u2022 advice: Consult local agricultural offic"
+  },
+  {
+    "query": "What is tulsi used for?",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 16.613006591796875,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "Benefits of neem",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 15.639543533325195,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "How to use aloe vera?",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 16.604185104370117,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "What is ginger good for?",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 15.643596649169922,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "Turmeric health benefits",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 15.753507614135742,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "Amla uses",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 18.625974655151367,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "Medicinal uses of tulsi",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 16.812562942504883,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "Neem for skin",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 17.667055130004883,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "Aloe vera for burns",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 23.26512336730957,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "Ginger for digestion",
+    "domain": "medicinal",
+    "expected": [
+      "sutra_023"
+    ],
+    "retrieved": [
+      "sutra_023"
+    ],
+    "match": true,
+    "time_ms": 16.947507858276367,
+    "synthesis": "information: I have information about: tulsi, neem, aloe vera, ginger, turmeric, amla (confidence: ("
+  },
+  {
+    "query": "What crop and how to manage water?",
+    "domain": "mixed",
+    "expected": [
+      "sutra_021",
+      "sutra_027"
+    ],
+    "retrieved": [
+      "sutra_021",
+      "sutra_027"
+    ],
+    "match": true,
+    "time_ms": 53.792476654052734,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 water_holding: U"
+  },
+  {
+    "query": "Pest control and crop selection",
+    "domain": "mixed",
+    "expected": [
+      "sutra_021",
+      "sutra_026"
+    ],
+    "retrieved": [
+      "sutra_021",
+      "sutra_026"
+    ],
+    "match": true,
+    "time_ms": 32.57632255554199,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 pest: Unknown (1"
+  },
+  {
+    "query": "Seasonal farming in Assam",
+    "domain": "mixed",
+    "expected": [
+      "sutra_025",
+      "sutra_021"
+    ],
+    "retrieved": [
+      "sutra_025",
+      "sutra_021"
+    ],
+    "match": true,
+    "time_ms": 32.479286193847656,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 rainfall: Unknow"
+  },
+  {
+    "query": "Math and translation help",
+    "domain": "mixed",
+    "expected": [
+      "sutra_024",
+      "sutra_022"
+    ],
+    "retrieved": [
+      "sutra_024",
+      "sutra_022"
+    ],
+    "match": true,
+    "time_ms": 29.5107364654541,
+    "synthesis": "Based on multiple sources:\n  \u2022 explanation: I can explain: addition, subtraction, multiplication, di"
+  },
+  {
+    "query": "Medicinal plant and farming",
+    "domain": "mixed",
+    "expected": [
+      "sutra_023",
+      "sutra_021"
+    ],
+    "retrieved": [
+      "sutra_023",
+      "sutra_021"
+    ],
+    "match": true,
+    "time_ms": 30.361175537109375,
+    "synthesis": "Based on multiple sources:\n  \u2022 crops: Consult local agricultural officer (1.00)\n  \u2022 information: I h"
+  }
+]

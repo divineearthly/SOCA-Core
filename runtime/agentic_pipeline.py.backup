@@ -1,5 +1,5 @@
 """
-SOCA Agentic Pipeline v23.1 - With Telemetry Recording
+SOCA Agentic Pipeline v22.5 - Fixed Enrichment Propagation
 """
 
 import sys
@@ -116,21 +116,6 @@ class AgenticPipeline:
     def _ask_clarification(self, user_id: str, goal: dict, start_time: float) -> dict:
         missing = [s for s in goal.get("required_slots", []) if not goal["filled_slots"].get(s)]
         questions = self._generate_questions(missing, goal.get("intent"))
-        
-        # Record clarification telemetry
-        elapsed = time.time() - start_time
-        self._record_telemetry({
-            "action": "record",
-            "query": goal.get("original_query", ""),
-            "intent": goal.get("intent", "general"),
-            "confidence": 0.0,
-            "iterations": 0,
-            "retrieval_strategy": "bm25",
-            "clarification_needed": True,
-            "execution_time_ms": round(elapsed * 1000, 1),
-            "weaknesses": missing
-        })
-        
         return {
             "status": "needs_clarification",
             "questions": questions,
@@ -139,7 +124,7 @@ class AgenticPipeline:
             "query": goal.get("original_query"),
             "intent": goal.get("intent"),
             "trace": self.trace,
-            "elapsed_ms": round(elapsed * 1000, 1)
+            "elapsed_ms": round((time.time() - start_time) * 1000, 1)
         }
 
     def _push_new_goal(self, query: str, user_id: str, start_time: float) -> dict:
@@ -289,7 +274,7 @@ class AgenticPipeline:
 
             result = self._execute_full_reasoning(working_memory, start_time)
 
-            # Structured Critic
+            # Critic gets the enriched answer
             critic_result = self._execute("sutra_083", {
                 "answer": result.get("answer", ""),
                 "sources": result.get("sources", []),
@@ -341,25 +326,10 @@ class AgenticPipeline:
             previous_confidence = confidence
 
             if confidence >= REFLECTION_THRESHOLD and len(weaknesses) == 0:
-                elapsed = time.time() - start_time
                 self._save_observation_memory(user_id, working_memory)
                 self._pop_goal(user_id)
                 result["iteration"] = iteration + 1
                 result["critic_used"] = True
-                
-                # Record telemetry for successful completion
-                self._record_telemetry({
-                    "action": "record",
-                    "query": goal.get("original_query", ""),
-                    "intent": goal.get("intent", "general"),
-                    "confidence": confidence,
-                    "iterations": iteration + 1,
-                    "retrieval_strategy": goal.get("retrieval_strategy", "bm25"),
-                    "clarification_needed": False,
-                    "execution_time_ms": round(elapsed * 1000, 1),
-                    "weaknesses": weaknesses
-                })
-                
                 return result
 
             if iteration < MAX_ITERATIONS - 1 and actions:
@@ -372,39 +342,14 @@ class AgenticPipeline:
                         self._save_conversation_state(user_id)
                         continue
 
-        # Return best result
-        elapsed = time.time() - start_time
         self._save_observation_memory(user_id, working_memory)
         self._pop_goal(user_id)
         if best_result:
             best_result["iteration"] = goal.get("iteration", MAX_ITERATIONS)
             best_result["critic_used"] = True
-            
-            # Record telemetry for best result
-            self._record_telemetry({
-                "action": "record",
-                "query": goal.get("original_query", ""),
-                "intent": goal.get("intent", "general"),
-                "confidence": best_confidence,
-                "iterations": goal.get("iteration", MAX_ITERATIONS),
-                "retrieval_strategy": goal.get("retrieval_strategy", "bm25"),
-                "clarification_needed": False,
-                "execution_time_ms": round(elapsed * 1000, 1),
-                "weaknesses": goal.get("weaknesses", [])
-            })
-            
             return best_result
 
         return result
-
-    def _record_telemetry(self, data: dict):
-        """Record telemetry using sutra_090."""
-        try:
-            result = self._execute("sutra_090", data)
-            return result
-        except Exception as e:
-            # Don't fail if telemetry fails
-            pass
 
     def _build_evidence_graph(self, result: dict, working_memory: dict) -> dict:
         sources = result.get("sources", [])
@@ -634,7 +579,7 @@ class AgenticPipeline:
         if ranker_result.get("status") == "success":
             working_memory["ranked_knowledge"] = ranker_result.get("outputs", {}).get("ranked_results", [])
             working_memory["sources"] = [
-                r.get("source", r.get("id", f"kb_{i}"))
+                r.get("source", r.get("id", f"kb_{i}")) 
                 for i, r in enumerate(working_memory["ranked_knowledge"][:3])
             ]
         self._add_trace("bm25", len(working_memory["ranked_knowledge"]))
@@ -728,7 +673,7 @@ class AgenticPipeline:
                 working_memory["synthesis"] = synthesis
                 working_memory["sources"] = sources
 
-        # Enrich answer with slots
+        # FIX 2: Enrich answer with slots - UPDATE THE VARIABLE
         enriched_synthesis = synthesis
         slots = working_memory.get("pending_slots", {})
         if slots.get("soil_type") and slots["soil_type"] not in synthesis.lower():
@@ -736,6 +681,7 @@ class AgenticPipeline:
         if slots.get("district") and slots["district"] not in synthesis.lower():
             enriched_synthesis += f" | District: {slots['district']}"
 
+        # Use enriched_synthesis everywhere
         working_memory["synthesis"] = enriched_synthesis
         self._add_trace("synthesis", enriched_synthesis[:50])
 
@@ -745,8 +691,8 @@ class AgenticPipeline:
             "status": "success",
             "query": working_memory["query"],
             "intent": working_memory["intent"],
-            "answer": enriched_synthesis,
-            "synthesis": enriched_synthesis,
+            "answer": enriched_synthesis,  # ← FIXED: use enriched
+            "synthesis": enriched_synthesis,  # ← FIXED: use enriched
             "recommendation": recommendation,
             "ranked_crops": ranked_crops,
             "alternatives": alternatives,

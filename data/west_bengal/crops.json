@@ -1,0 +1,29 @@
+{
+  "state": "West Bengal",
+  "crops": [
+    {
+      "name": "Rice (Aman)",
+      "local_name": "আমন ধান",
+      "season": "Kharif (July-December)",
+      "soil": "Alluvial, clay",
+      "water_requirement": "High",
+      "duration": "140-160 days",
+      "varieties": ["Aman", "Boro", "Aus"],
+      "traditional_practice": "Transplanting",
+      "districts": ["Bankura", "Birbhum", "Burdwan", "Murshidabad"],
+      "yield_per_hectare": "3.0-4.0 tons"
+    },
+    {
+      "name": "Jute",
+      "local_name": "পাট",
+      "season": "Kharif (May-August)",
+      "soil": "Alluvial",
+      "water_requirement": "High",
+      "duration": "120 days",
+      "varieties": ["White Jute", "Tossa"],
+      "traditional_practice": "Retting in water",
+      "districts": ["Cooch Behar", "Maldah", "Murshidabad"],
+      "yield_per_hectare": "2.0-3.0 tons"
+    }
+  ]
+}

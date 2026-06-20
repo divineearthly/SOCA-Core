@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_070",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Multi-Hop Reasoner",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "results", "type": "object", "required": true},
+    {"name": "query", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "synthesis", "type": "string"},
+    {"name": "sources", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.multi_hop_reasoner",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

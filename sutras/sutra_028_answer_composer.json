@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_028",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Answer Composer",
+  "type": "synthesis",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true},
+    {"name": "results", "type": "object", "required": true},
+    {"name": "sutra_ids", "type": "array", "required": false},
+    {"name": "confidence", "type": "number", "required": false}
+  ],
+  "outputs": [
+    {"name": "answer", "type": "string"},
+    {"name": "confidence", "type": "number"},
+    {"name": "sutras_used", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.synthesis.answer_composer",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {
+          "query": "test",
+          "results": {"sutra_001": {"sum": 5}},
+          "sutra_ids": ["sutra_001"]
+        },
+        "expected": {"answer": "sum: 5"}
+      }
+    ]
+  }
+}

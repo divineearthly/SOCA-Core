@@ -1,0 +1,26 @@
+{
+  "nodes": [
+    "sutra_021",
+    "sutra_081",
+    "sutra_079",
+    "sutra_084",
+    "sutra_025",
+    "sutra_029",
+    "sutra_071",
+    "sutra_083",
+    "sutra_041",
+    "sutra_069",
+    "sutra_045",
+    "sutra_074",
+    "sutra_080",
+    "sutra_027",
+    "sutra_076"
+  ],
+  "edges": [],
+  "stats": {
+    "total_traces": 50,
+    "traces_with_edges": 0,
+    "total_nodes": 15,
+    "total_edges": 0
+  }
+}

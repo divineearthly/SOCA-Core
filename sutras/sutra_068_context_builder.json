@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_068",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Context Builder",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true},
+    {"name": "user_id", "type": "string", "required": false},
+    {"name": "language", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "query", "type": "string"},
+    {"name": "intent", "type": "string"},
+    {"name": "missing_info", "type": "array"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.context_builder",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

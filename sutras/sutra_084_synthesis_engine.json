@@ -1,0 +1,30 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_084",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Synthesis Engine",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "results", "type": "object", "required": true},
+    {"name": "slots", "type": "object", "required": false},
+    {"name": "intent", "type": "string", "required": false},
+    {"name": "sources", "type": "array", "required": false},
+    {"name": "subgoals", "type": "array", "required": false}
+  ],
+  "outputs": [
+    {"name": "synthesis", "type": "string"},
+    {"name": "recommendation", "type": "string"},
+    {"name": "ranked_crops", "type": "array"},
+    {"name": "alternatives", "type": "array"},
+    {"name": "confidence", "type": "number"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.synthesis_engine",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

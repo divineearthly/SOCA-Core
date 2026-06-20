@@ -1,0 +1,325 @@
+[
+  {
+    "query": "What crop should I grow in Assam?",
+    "expected": [
+      "sutra_021",
+      "sutra_025"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "Best crop for loamy soil",
+    "expected": [
+      "sutra_021"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "What to plant in kharif season?",
+    "expected": [
+      "sutra_021",
+      "sutra_025"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "How to control pests on rice?",
+    "expected": [
+      "sutra_026"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "What is the best irrigation method?",
+    "expected": [
+      "sutra_027"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "Which crop needs less water?",
+    "expected": [
+      "sutra_027",
+      "sutra_021"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "What to grow in clay soil?",
+    "expected": [
+      "sutra_021"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "Pest management for cotton",
+    "expected": [
+      "sutra_026"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "Farming advice for monsoon season",
+    "expected": [
+      "sutra_025"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "How to prevent crop diseases?",
+    "expected": [
+      "sutra_026"
+    ],
+    "domain": "agriculture"
+  },
+  {
+    "query": "What is addition?",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "Explain multiplication",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "How to subtract numbers?",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "What is division?",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "Explain fractions",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "What are decimals?",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "Math tutor for addition",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "How to learn multiplication?",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "Explain subtraction to kids",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "What is the sum of numbers?",
+    "expected": [
+      "sutra_022"
+    ],
+    "domain": "education"
+  },
+  {
+    "query": "Translate hello to Hindi",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "How to say water in Assamese?",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "Translate food to Bengali",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "What is earth in Sanskrit?",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "Translate sky to Hindi",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "Friend in Bengali",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "Assamese translation for water",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "Sanskrit word for earth",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "Hindi translation of hello",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "Translate friend to Assamese",
+    "expected": [
+      "sutra_024"
+    ],
+    "domain": "translation"
+  },
+  {
+    "query": "What is tulsi used for?",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "Benefits of neem",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "How to use aloe vera?",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "What is ginger good for?",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "Turmeric health benefits",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "Amla uses",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "Medicinal uses of tulsi",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "Neem for skin",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "Aloe vera for burns",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "Ginger for digestion",
+    "expected": [
+      "sutra_023"
+    ],
+    "domain": "medicinal"
+  },
+  {
+    "query": "What crop and how to manage water?",
+    "expected": [
+      "sutra_021",
+      "sutra_027"
+    ],
+    "domain": "mixed"
+  },
+  {
+    "query": "Pest control and crop selection",
+    "expected": [
+      "sutra_026",
+      "sutra_021"
+    ],
+    "domain": "mixed"
+  },
+  {
+    "query": "Seasonal farming in Assam",
+    "expected": [
+      "sutra_025",
+      "sutra_021"
+    ],
+    "domain": "mixed"
+  },
+  {
+    "query": "Math and translation help",
+    "expected": [
+      "sutra_022",
+      "sutra_024"
+    ],
+    "domain": "mixed"
+  },
+  {
+    "query": "Medicinal plant and farming",
+    "expected": [
+      "sutra_023",
+      "sutra_021"
+    ],
+    "domain": "mixed"
+  }
+]

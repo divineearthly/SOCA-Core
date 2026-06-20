@@ -1,10 +1,11 @@
 """
-Enhanced Sutra Retriever with Knowledge Graph
+Enhanced Sutra Retriever with Knowledge Graph and Parameter Extraction
 """
 
 import sqlite3
 import os
 import sys
+import re
 sys.path.append('runtime/graph')
 from knowledge_graph import KnowledgeGraph
 
@@ -42,6 +43,43 @@ class EnhancedRetriever:
         # Return top_k sutra IDs
         return [r['sutra_id'] for r in results[:top_k]], results[:top_k]
     
+    def extract_parameters(self, query: str) -> dict:
+        """Extract parameters from query (location, soil, season, etc.)"""
+        query_lower = query.lower()
+        params = {}
+        
+        # Location extraction
+        locations = ['assam', 'axom', 'guwahati', 'jorhat', 'dibrugarh', 
+                    'tezpur', 'silchar', 'nagaon', 'tinsukia', 'golaghat']
+        for loc in locations:
+            if loc in query_lower:
+                params['location'] = loc
+                break
+        
+        # Soil type extraction
+        soil_types = ['loamy', 'clay', 'sandy', 'laterite', 'alluvial']
+        for soil in soil_types:
+            if soil in query_lower:
+                params['soil_type'] = soil
+                break
+        
+        # Season extraction
+        seasons = ['kharif', 'rabi', 'summer', 'winter', 'monsoon']
+        for season in seasons:
+            if season in query_lower:
+                params['season'] = season
+                break
+        
+        # Crop extraction (if mentioned)
+        crops = ['rice', 'wheat', 'cotton', 'sugarcane', 'tea', 'jute', 
+                'mustard', 'gram', 'lentils', 'potato', 'onion']
+        for crop in crops:
+            if crop in query_lower:
+                params['crop'] = crop
+                break
+        
+        return params
+    
     def _extract_concepts(self, query: str) -> list:
         """Extract concepts from query."""
         concept_map = {
@@ -51,12 +89,17 @@ class EnhancedRetriever:
             'rainfall': ['rain', 'rainfall', 'monsoon', 'weather'],
             'pest': ['pest', 'insect', 'disease', 'bug', 'aphid'],
             'water': ['water', 'irrigation', 'drainage', 'flood'],
-            'math': ['math', 'numbers', 'addition', 'subtraction', 'multiplication', 'division'],
+            'math': ['math', 'numbers', 'addition', 'subtraction', 'multiplication', 'division', 'fraction', 'decimal'],
+            'fraction': ['fraction', 'fractions', 'part', 'whole'],
+            'decimal': ['decimal', 'decimals', 'point'],
             'language': ['language', 'translate', 'translation', 'hindi', 'assamese', 'bengali', 'sanskrit'],
             'medicinal': ['medicinal', 'tulsi', 'neem', 'aloe', 'ginger', 'turmeric', 'amla'],
             'education': ['education', 'tutor', 'teach', 'learn', 'school'],
             'code': ['code', 'generate', 'python', 'function', 'program'],
-            'weather': ['weather', 'rain', 'rainfall', 'climate', 'monsoon', 'assam', 'kharif', 'rabi', 'season']
+            'weather': ['weather', 'rain', 'rainfall', 'climate', 'monsoon', 'assam', 'kharif', 'rabi', 'season'],
+            'market': ['market', 'price', 'sell', 'buy', 'mandi', 'profit'],
+            'fertilizer': ['fertilizer', 'manure', 'compost', 'npk'],
+            'livestock': ['livestock', 'cattle', 'goat', 'poultry', 'cow', 'buffalo']
         }
         
         found = []
@@ -79,9 +122,11 @@ class EnhancedRetriever:
     def explain(self, query: str) -> dict:
         """Explain retrieval decisions."""
         sutra_ids, details = self.retrieve(query)
+        params = self.extract_parameters(query)
         return {
             'query': query,
             'concepts': self._extract_concepts(query),
+            'parameters': params,
             'retrieved_sutras': details
         }
     

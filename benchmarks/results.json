@@ -1,0 +1,47 @@
+[
+  {
+    "size": 10,
+    "nodes": 10,
+    "edges": 17,
+    "time_ms": 64.82601165771484,
+    "memory_mb": 1.25,
+    "status": "success",
+    "trace_id": "678c082c"
+  },
+  {
+    "size": 50,
+    "nodes": 50,
+    "edges": 368,
+    "time_ms": 40.07673263549805,
+    "memory_mb": 2.375,
+    "status": "success",
+    "trace_id": "391696dc"
+  },
+  {
+    "size": 100,
+    "nodes": 100,
+    "edges": 1477,
+    "time_ms": 42.1290397644043,
+    "memory_mb": 0.25,
+    "status": "success",
+    "trace_id": "496b509d"
+  },
+  {
+    "size": 500,
+    "nodes": 500,
+    "edges": 37481,
+    "time_ms": 192.5220489501953,
+    "memory_mb": 5.0,
+    "status": "success",
+    "trace_id": "d6bd2eb1"
+  },
+  {
+    "size": 1000,
+    "nodes": 1000,
+    "edges": 149559,
+    "time_ms": 685.560941696167,
+    "memory_mb": 17.5,
+    "status": "success",
+    "trace_id": "4095ffc3"
+  }
+]

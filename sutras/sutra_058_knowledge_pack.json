@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_058",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Village Knowledge Pack",
+  "type": "knowledge",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "pack_name", "type": "string", "required": false},
+    {"name": "pack_data", "type": "object", "required": false}
+  ],
+  "outputs": [
+    {"name": "packs", "type": "array"},
+    {"name": "data", "type": "object"},
+    {"name": "file", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.knowledge.knowledge_pack",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

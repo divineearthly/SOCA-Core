@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_034",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Assamese Voice Commands",
+  "type": "language",
+  "category": "domain",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "command", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "command", "type": "string"},
+    {"name": "sutra", "type": "string"},
+    {"name": "recognized", "type": "boolean"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.assamese.voice",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"command": "crop"},
+        "expected": {"sutra": "crop_advisor"}
+      }
+    ]
+  }
+}

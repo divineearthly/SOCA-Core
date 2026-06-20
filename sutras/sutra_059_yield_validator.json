@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_059",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Yield Validator",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "district", "type": "string", "required": false},
+    {"name": "crop", "type": "string", "required": false},
+    {"name": "predicted", "type": "number", "required": false},
+    {"name": "actual", "type": "number", "required": false}
+  ],
+  "outputs": [
+    {"name": "error_percent", "type": "number"},
+    {"name": "total_records", "type": "integer"},
+    {"name": "avg_error", "type": "number"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.yield_validator",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

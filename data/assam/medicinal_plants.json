@@ -1,25 +1,50 @@
 {
+  "state": "Assam",
   "plants": [
     {
       "name": "Tulsi",
       "local_name": "তুলসী",
-      "uses": ["Cough", "Cold", "Respiratory issues"],
-      "preparation": "Chew leaves or make tea",
-      "region": "Assam"
+      "scientific_name": "Ocimum sanctum",
+      "uses": ["Cough", "Cold", "Respiratory issues", "Fever"],
+      "preparation": "Chew 5-6 leaves daily or make tea",
+      "season": "Perennial",
+      "region": "Statewide"
     },
     {
       "name": "Neem",
       "local_name": "নিম",
-      "uses": ["Skin conditions", "Dental care", "Antibacterial"],
+      "scientific_name": "Azadirachta indica",
+      "uses": ["Skin conditions", "Dental care", "Antibacterial", "Pesticide"],
       "preparation": "Paste from leaves or oil",
-      "region": "Assam"
+      "season": "Perennial",
+      "region": "Statewide"
     },
     {
       "name": "Ginger",
       "local_name": "আদা",
-      "uses": ["Digestion", "Nausea", "Anti-inflammatory"],
-      "preparation": "Fresh or dried in cooking",
-      "region": "Assam"
+      "scientific_name": "Zingiber officinale",
+      "uses": ["Digestion", "Nausea", "Anti-inflammatory", "Cold"],
+      "preparation": "Fresh or dried in cooking, ginger tea",
+      "season": "Year-round",
+      "region": "Statewide"
+    },
+    {
+      "name": "Turmeric",
+      "local_name": "হালধি",
+      "scientific_name": "Curcuma longa",
+      "uses": ["Anti-inflammatory", "Antioxidant", "Wound healing"],
+      "preparation": "Powder or paste",
+      "season": "Year-round",
+      "region": "Statewide"
+    },
+    {
+      "name": "Amla",
+      "local_name": "আমলখি",
+      "scientific_name": "Phyllanthus emblica",
+      "uses": ["Vitamin C", "Immunity", "Digestion", "Hair health"],
+      "preparation": "Eat raw or juice",
+      "season": "Winter",
+      "region": "Statewide"
     }
   ]
 }

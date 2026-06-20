@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_041",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Knowledge Search",
+  "type": "search",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true},
+    {"name": "state", "type": "string", "required": false},
+    {"name": "domain", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "query", "type": "string"},
+    {"name": "results", "type": "array"},
+    {"name": "count", "type": "integer"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.search.knowledge_search",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

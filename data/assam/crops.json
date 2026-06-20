@@ -1,34 +1,57 @@
 {
+  "state": "Assam",
   "crops": [
     {
       "name": "Rice (Sali)",
-      "season": "Kharif",
-      "soil": "Loamy",
+      "local_name": "শালি ধান",
+      "season": "Kharif (July-December)",
+      "soil": "Loamy, clay",
       "water_requirement": "High",
       "duration": "120-150 days",
       "varieties": ["Boro", "Sali", "Ahu"],
-      "traditional_practice": "Transplanting method",
-      "region": "Assam"
+      "traditional_practice": "Transplanting method, jhum cultivation",
+      "districts": ["Bongaigaon", "Jorhat", "Dibrugarh", "Silchar", "Nagaon"],
+      "yield_per_hectare": "2.5-3.5 tons",
+      "pest_risks": ["Stem borer", "Leafhopper"]
     },
     {
       "name": "Tea",
-      "season": "Kharif",
-      "soil": "Well-drained acidic soil",
+      "local_name": "চাহ",
+      "season": "Perennial (March-December)",
+      "soil": "Well-drained acidic (pH 4.5-5.5)",
       "water_requirement": "Moderate",
       "duration": "Perennial",
       "varieties": ["Assam CTC", "Orthodox"],
       "traditional_practice": "Two-leaf-and-a-bud plucking",
-      "region": "Assam"
+      "districts": ["Dibrugarh", "Jorhat", "Tinsukia", "Sivasagar"],
+      "yield_per_hectare": "1.5-2.0 tons",
+      "pest_risks": ["Tea mosquito bug", "Red spider mite"]
     },
     {
       "name": "Jute",
-      "season": "Kharif",
-      "soil": "Alluvial",
+      "local_name": "পাট",
+      "season": "Kharif (May-August)",
+      "soil": "Alluvial, loamy",
       "water_requirement": "High",
       "duration": "120 days",
       "varieties": ["White Jute", "Tossa"],
       "traditional_practice": "Retting in water",
-      "region": "Assam"
+      "districts": ["Goalpara", "Dhubri", "Bongaigaon"],
+      "yield_per_hectare": "2.0-2.5 tons",
+      "pest_risks": ["Jute stem weevil", "Semi-looper"]
+    },
+    {
+      "name": "Mustard",
+      "local_name": "সৰিয়হ",
+      "season": "Rabi (October-February)",
+      "soil": "Loamy",
+      "water_requirement": "Moderate",
+      "duration": "80-100 days",
+      "varieties": ["Yellow mustard", "Brown mustard"],
+      "traditional_practice": "Broadcast sowing",
+      "districts": ["Nagaon", "Darrang", "Kamrup"],
+      "yield_per_hectare": "0.8-1.2 tons",
+      "pest_risks": ["Aphids", "Leaf spot"]
     }
   ]
 }

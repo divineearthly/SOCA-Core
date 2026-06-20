@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_035",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Market Intelligence",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "crop", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "assam_price", "type": "string"},
+    {"name": "trend", "type": "string"},
+    {"name": "demand", "type": "string"},
+    {"name": "best_mandi", "type": "string"},
+    {"name": "export_potential", "type": "string"},
+    {"name": "storage", "type": "string"},
+    {"name": "advice", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.market_intelligence",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"crop": "rice"},
+        "expected": {"assam_price": "₹22-28 per kg"}
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1.0",
-  "sutra_id": "sutra_012",
+  "sutra_id": "sutra_020",
   "sutra_version": "1.0.0",
   "compatibility": ["0.1.x"],
   "name": "Simple LLM Responses",

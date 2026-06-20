@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_071",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Fact Checker",
+  "type": "core",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "answer", "type": "string", "required": true},
+    {"name": "sources", "type": "array", "required": false},
+    {"name": "domain", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "verified", "type": "boolean"},
+    {"name": "confidence", "type": "number"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.fact_checker",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

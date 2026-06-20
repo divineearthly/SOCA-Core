@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_056",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Crop Rotation Advisor",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "soil_type", "type": "string", "required": false},
+    {"name": "crop_history", "type": "array", "required": false},
+    {"name": "district", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "recommended_crops", "type": "array"},
+    {"name": "reason", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.crop_rotation_advisor",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

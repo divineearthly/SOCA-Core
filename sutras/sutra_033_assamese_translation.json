@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_033",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Assamese Translation",
+  "type": "language",
+  "category": "domain",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "text", "type": "string", "required": true},
+    {"name": "target", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "original", "type": "string"},
+    {"name": "translated", "type": "string"},
+    {"name": "target_language", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.assamese.translation",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"text": "rice", "target": "as"},
+        "expected": {"translated": "ধান"}
+      }
+    ]
+  }
+}

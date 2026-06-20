@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_057",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Yield Predictor",
+  "type": "agriculture",
+  "category": "domain",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "district", "type": "string", "required": true},
+    {"name": "crop", "type": "string", "required": true},
+    {"name": "rainfall", "type": "string", "required": false},
+    {"name": "soil_type", "type": "string", "required": false}
+  ],
+  "outputs": [
+    {"name": "predicted_yield", "type": "number"},
+    {"name": "unit", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.agriculture.yield_predictor",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

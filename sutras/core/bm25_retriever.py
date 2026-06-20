@@ -1,7 +1,5 @@
 """
-sutra_080: BM25 Retriever
-Pramana: Anumana (Inference)
-Rank knowledge by BM25 score
+sutra_080: BM25 Retriever (Fixed for empty corpus)
 """
 
 import os
@@ -17,10 +15,18 @@ class BM25:
         self.k1 = k1
         self.b = b
         self.corpus = corpus
-        self.doc_lengths = [len(doc.split()) for doc in corpus]
-        self.avg_doc_len = sum(self.doc_lengths) / len(self.doc_lengths)
         
-        # Term frequencies
+        if not corpus:
+            self.doc_lengths = []
+            self.avg_doc_len = 1
+            self.tf = []
+            self.doc_freq = {}
+            self.N = 0
+            return
+        
+        self.doc_lengths = [len(doc.split()) for doc in corpus]
+        self.avg_doc_len = sum(self.doc_lengths) / len(self.doc_lengths) if corpus else 1
+        
         self.tf = []
         self.doc_freq = {}
         for doc in corpus:
@@ -33,6 +39,9 @@ class BM25:
         self.N = len(corpus)
     
     def score(self, query):
+        if not self.corpus:
+            return []
+        
         query_words = query.lower().split()
         scores = []
         
@@ -68,7 +77,6 @@ def execute(inputs: dict, context: dict = None) -> dict:
             confidence=0.5
         )
     
-    # Build corpus from knowledge results
     corpus = []
     items = []
     for item in knowledge_results:
@@ -76,20 +84,17 @@ def execute(inputs: dict, context: dict = None) -> dict:
         corpus.append(data_str)
         items.append(item)
     
-    # BM25 scoring
     bm25 = BM25(corpus)
     scores = bm25.score(query)
     
-    # Combine with items
     ranked = []
     for i, item in enumerate(items):
         ranked.append({
             'source': item.get('source', 'unknown'),
             'data': item.get('data', {}),
-            'bm25_score': round(scores[i], 4)
+            'bm25_score': round(scores[i], 4) if scores and i < len(scores) else 0
         })
     
-    # Sort by BM25 score
     ranked.sort(key=lambda x: x['bm25_score'], reverse=True)
     
     return success_response(

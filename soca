@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+"""
+SOCA CLI - Divine Earthly Core with Memory
+Now accepts plain text queries
+"""
+
+import sys
+import os
+import json
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from runtime.retrieval.multi_sutra_planner import MultiSutraPlanner
+
+def print_help():
+    print("""
+🕉️ SOCA - Sutra-Oriented Cognitive Architecture
+================================================
+
+Commands:
+  ask <question>     Ask a question (uses memory)
+  <question>         Just type your question directly
+  remember <key> <value>  Store something in memory
+  memory             Show current memory
+  forget <key>       Forget a memory
+  help               Show this help
+  exit               Exit SOCA
+
+Examples:
+  soca ask "What crop should I grow in Assam?"
+  soca "What crop should I grow in Assam?"   # Same as above
+  soca remember location "Assam"
+  soca ask "Which crop should I grow?"  # Uses remembered location
+  soca memory
+""")
+
+def main():
+    print("\n🕉️ SOCA - Divine Earthly Core (with Memory)")
+    print("Type your question directly or use 'help' for commands")
+    print("Example: What crop should I grow in Assam?\n")
+    
+    planner = MultiSutraPlanner()
+    
+    while True:
+        try:
+            user_input = input("🔱 ").strip()
+            
+            if not user_input:
+                continue
+            
+            if user_input.lower() in ['exit', 'quit']:
+                print("🙏 Namaste. Shanti.")
+                break
+            
+            if user_input.lower() == 'help':
+                print_help()
+                continue
+            
+            if user_input.lower().startswith('ask '):
+                query = user_input[4:].strip()
+            elif user_input.lower().startswith('remember '):
+                parts = user_input[9:].strip().split(' ', 1)
+                if len(parts) == 2:
+                    key, value = parts
+                    planner.store_memory(key, value)
+                    print(f"🧠 Remembered: {key} = {value}\n")
+                else:
+                    print("❌ Usage: remember <key> <value>\n")
+                continue
+            
+            elif user_input.lower() == 'memory':
+                mem = planner.memory.get_all_context()
+                if mem:
+                    print("🧠 Current Memory:")
+                    for k, v in mem.items():
+                        print(f"  {k}: {v}")
+                else:
+                    print("🧠 No memory stored.")
+                print()
+                continue
+            
+            elif user_input.lower().startswith('forget '):
+                key = user_input[7:].strip()
+                if key in planner.memory.session_memory:
+                    del planner.memory.session_memory[key]
+                    print(f"🧠 Forgot: {key}\n")
+                else:
+                    print(f"❌ Key not found: {key}\n")
+                continue
+            
+            else:
+                # Treat any other input as a query
+                query = user_input
+            
+            # Process query
+            print(f"\n📝 Processing: {query}\n")
+            
+            result = planner.plan_and_execute(query, {})
+            
+            if result['status'] == 'success':
+                synthesis = result.get('synthesis', 'No synthesis available')
+                sutras = [s['sutra_id'] for s in result.get('scored_sutras', [])]
+                scores = [s['score'] for s in result.get('scored_sutras', [])]
+                
+                print(f"✅ Answer: {synthesis}")
+                if sutras:
+                    print(f"🔧 Sutras used: {', '.join(f'{s}({sc:.2f})' for s, sc in zip(sutras, scores))}")
+                
+                if result.get('memory_used'):
+                    print(f"🧠 Memory used: {result['memory_used']}")
+            else:
+                print(f"❌ Error: {result.get('error', 'Unknown error')}")
+            print()
+            
+        except KeyboardInterrupt:
+            print("\n\n🙏 Namaste. Shanti.")
+            break
+        except Exception as e:
+            print(f"❌ Error: {e}")
+
+if __name__ == "__main__":
+    main()

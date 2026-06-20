@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_032",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Assamese NLU",
+  "type": "language",
+  "category": "domain",
+  "pramana": "shabda",
+  "inputs": [
+    {"name": "query", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "original_query", "type": "string"},
+    {"name": "extracted", "type": "object"},
+    {"name": "language", "type": "string"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.assamese.nlu",
+    "entry_point": "execute"
+  },
+  "validation": {
+    "tests": [
+      {
+        "input": {"query": "ধান ৰোপণ"},
+        "expected": {"language": "assamese"}
+      }
+    ]
+  }
+}
