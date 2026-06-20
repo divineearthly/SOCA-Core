@@ -1,43 +1,15 @@
+SOCA Benchmark Results
+Time: 2026-06-20 22:08:15
 ============================================================
-📊 SOCA BENCHMARK SUITE v0.2
-Platform: Android (Termux)
-============================================================
-
-📈 Memory Usage:
-  Runtime memory: 0.0 MB
-
-📋 Dependency Scheduling:
-  Status: success
-  Verified: False
-  Time: 68.7 ms
-  Trace ID: 312a2380
-
-🔄 Cycle Detection:
-  Status: failure
-  Detected: True
-  Time: 18.2 ms
-
-💻 Code Generation:
-  Status: success
-  Verified: True
-  Tests: 0/0 passed
-
-📊 Registry:
-  Total Sutras: 15
-  Total Traces: 107
-  Total Usage: 16
-
-🧠 LLM Model:
-  Available: Yes (638 MB)
+What crop should I grow in Assam?: 598.9ms, conf: N/A
+What is the price of rice in Assam?: 522.4ms, conf: N/A
+How to control pests on rice?: 615.7ms, conf: N/A
+What is the weather like in Assam?: 1184.2ms, conf: 0.65
+Nutrition advice for 30-year-old: 1584.3ms, conf: 0.65
+What is addition?: 667.5ms, conf: N/A
+Translate hello to Assamese: 601.5ms, conf: N/A
 
 ============================================================
-📊 SUMMARY TABLE
-============================================================
-  Memory Usage:      0.0 MB
-  Scheduling:        False (68.7 ms)
-  Cycle Detection:   True (18.2 ms)
-  Code Gen Status:   success (0/0)
-  Total Sutras:      15
-  Total Traces:      107
-  Total Usage:       16
-============================================================
+Total queries: 7
+Average: 824.9 ms
+Telemetry: 44 records
