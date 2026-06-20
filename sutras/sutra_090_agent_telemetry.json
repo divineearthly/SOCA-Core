@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_090",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Agent Telemetry",
+  "type": "core",
+  "category": "core",
+  "pramana": "pratyaksha",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true},
+    {"name": "query", "type": "string", "required": false},
+    {"name": "intent", "type": "string", "required": false},
+    {"name": "confidence", "type": "number", "required": false},
+    {"name": "iterations", "type": "integer", "required": false},
+    {"name": "retrieval_strategy", "type": "string", "required": false},
+    {"name": "clarification_needed", "type": "boolean", "required": false},
+    {"name": "execution_time_ms", "type": "number", "required": false}
+  ],
+  "outputs": [
+    {"name": "recorded", "type": "boolean"},
+    {"name": "total_queries", "type": "integer"},
+    {"name": "avg_confidence", "type": "number"},
+    {"name": "avg_iterations", "type": "number"}
+  ],
+  "prerequisites": [],
+  "operation": {
+    "module": "sutras.core.agent_telemetry",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}

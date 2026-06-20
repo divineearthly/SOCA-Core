@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "sutra_id": "sutra_091",
+  "sutra_version": "1.0.0",
+  "compatibility": ["0.1.x"],
+  "name": "Dashboard Analytics",
+  "type": "core",
+  "category": "core",
+  "pramana": "anumana",
+  "inputs": [
+    {"name": "action", "type": "string", "required": true}
+  ],
+  "outputs": [
+    {"name": "summary", "type": "object"},
+    {"name": "by_intent", "type": "array"},
+    {"name": "retrieval_stats", "type": "array"},
+    {"name": "repair_stats", "type": "array"}
+  ],
+  "prerequisites": ["sutra_090"],
+  "operation": {
+    "module": "sutras.core.dashboard_analytics",
+    "entry_point": "execute"
+  },
+  "validation": {"tests": []}
+}
